@@ -2,6 +2,9 @@
 session_start();
 require_once 'db.php';
 
+// Set active page for sidebar
+$activePage = 'dashboard.php';
+
 // --- الحصول على الفرق ---
 $teams_result = $conn->query("SELECT DISTINCT team FROM employees");
 $teams = [];
@@ -35,220 +38,216 @@ if (isset($_GET['team_export'])) {
     fclose($output);
     exit();
 }
-?>
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - الكشافة</title>
-    <style>
-    body {
-        font-family: "Segoe UI", Arial, sans-serif;
-        margin: 0;
-        background: #f4f4f4;
-        color: #333;
-        display: flex;
-        direction: rtl;
-    }
+// Dashboard content
+$pageContent = '
+<style>
+.dashboard-container {
+    font-family: "Cairo", sans-serif;
+    background: white;
+    padding: 30px;
+    direction: rtl;
+    text-align: center;
+}
 
-    .main-content {
-        margin-right: 220px;
-        padding: 30px;
-        width: 100%;
-    }
+.dashboard-title {
+    text-align: center;
+    color: #2d3748;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+}
 
-    @media(max-width:768px) {
-        .main-content {
-            margin-right: 60px;
-        }
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 40px;
+    justify-content: center;
+}
 
-        .cards {
-            flex-direction: column;
-        }
-    }
+.card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    flex: 1;
+    min-width: 220px;
+    text-align: center;
+}
 
-    .cards {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        margin-bottom: 40px;
-    }
+.card h3 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+    font-weight: 600;
+}
 
-    .card {
-        background: #fff;
+.card p {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 8px 0;
+    text-align: center;
+}
+
+.total-card {
+    background: #2c3e50;
+    color: #fff;
+    border-top: 5px solid #0d665b;
+}
+
+.total-card h3,
+.total-card p {
+    color: #fff;
+}
+
+.section-title {
+    color: #3498db;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 30px 0 20px 0;
+    text-align: center;
+}
+
+.export-btn {
+    background: #2c3e50;
+    color: #fff;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    margin: 5px;
+    display: inline-block;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+.export-btn:hover {
+    background: #3498db;
+}
+
+.payment-table {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto 40px auto;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.payment-table th,
+.payment-table td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+}
+
+.payment-table th {
+    background: #f8fafc;
+    color: #000;
+    font-weight: 600;
+}
+
+.payment-table tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.payment-table tr:hover {
+    background: #f1f5f9;
+}
+
+/* Responsive */
+@media(max-width:768px) {
+    .dashboard-container {
         padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
-        flex: 1;
-        min-width: 220px;
-        text-align: center;
     }
-
-    .card h3 {
-        margin-bottom: 15px;
-        color: #0f766e;
+    
+    .dashboard-title {
+        font-size: 2rem;
     }
-
-    .card p {
-        font-size: 18px;
-        font-weight: bold;
-        margin: 8px 0;
+    
+    .cards {
+        flex-direction: column;
+        align-items: center;
     }
-
-    .total-card {
-        background: #1abc9c;
-        color: #fff;
-        border-top: 5px solid #16a085;
+    
+    .card {
+        max-width: 90%;
     }
-
-    .total-card h3,
-    .total-card p {
-        color: #fff;
-    }
-
+    
     .export-btn {
-        background: #0f766e;
-        color: #fff;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 6px;
-        text-decoration: none;
-        margin: 5px;
-        display: inline-block;
+        display: block;
+        margin: 5px 0;
     }
+}
 
-    .export-btn:hover {
-        background: #0d665b;
+@media(max-width:480px) {
+    .card {
+        max-width: 100%;
     }
-
+    
     .payment-table {
-        width: 100%;
-        max-width: 500px;
-        margin: 0 auto 40px auto;
-        border-collapse: collapse;
-        background: #fff;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        max-width: 100%;
     }
+}
+</style>
 
-    .payment-table th,
-    .payment-table td {
-        padding: 10px;
-        text-align: center;
-        border-bottom: 1px solid #eee;
-    }
-
-    .payment-table th {
-        background: #0f766e;
-        color: #fff;
-    }
-
-    .payment-table tr:last-child td {
-        border-bottom: none;
-    }
-
-    /* Responsive */
-    @media(max-width:1024px) {
-        .main-content {
-            margin-right: 180px;
-        }
-
-        .sidenav {
-            width: 180px;
-        }
-    }
-
-    @media(max-width:768px) {
-        body {
-            flex-direction: column;
-        }
-
-        .sidenav {
-            position: relative;
-            width: 100%;
-            height: auto;
-        }
-
-        .main-content {
-            margin-right: 0;
-            width: 100%;
-            padding: 20px;
-        }
-
-        .cards {
-            justify-content: center;
-        }
-
-        .card {
-            max-width: 90%;
-        }
-    }
-
-    @media(max-width:480px) {
-        .card {
-            max-width: 100%;
-        }
-    }
-    </style>
-</head>
-
-<body>
-
-    <?php include 'sidenav.php'; ?>
-
-    <div class="main-content">
-        <h1>لوحة التحكم - الكشافة</h1>
-        <div class="cards">
-            <div class="card total-card">
-                <h3>إجمالي الكشافة</h3>
-                <p><?= $total_scouts_all ?></p>
-            </div>
-            <div class="card total-card">
-                <h3>إجمالي المدفوعات</h3>
-                <p><?= number_format($total_payment_all,2) ?> جنيه</p>
-            </div>
+<div class="dashboard-container">
+    <h1 class="dashboard-title">لوحة التحكم - الكشافة</h1>
+    
+    <div class="cards">
+        <div class="card total-card">
+            <h3>إجمالي الكشافة</h3>
+            <p>' . $total_scouts_all . '</p>
         </div>
-
-        <h2>توزيع الفرق</h2>
-        <h2>توزيع الفرق</h2>
-        <div class="cards">
-            <?php foreach ($teams as $team): ?>
-            <?php $count = $conn->query("SELECT COUNT(*) as c FROM employees WHERE team='$team'")->fetch_assoc()['c']; ?>
-            <div class="card" style="border-top:5px solid #<?= substr(md5($team),0,6) ?>">
-                <h3><?= htmlspecialchars($team) ?></h3>
-                <p>عدد الكشافة: <?= $count ?></p>
-                <a href="team_members.php?team=<?= urlencode($team) ?>" class="export-btn">عرض الأعضاء</a>
-                <a href="dashboard.php?team_export=<?= urlencode($team) ?>" class="export-btn">تحميل CSV</a>
-            </div>
-            <?php endforeach; ?>
+        <div class="card total-card">
+            <h3>إجمالي المدفوعات</h3>
+            <p>' . number_format($total_payment_all, 2) . ' جنيه</p>
         </div>
-
-        <h2>توزيع المدفوعات</h2>
-        <h2>توزيع المدفوعات</h2>
-        <table class="payment-table">
-            <thead>
-                <tr>
-                    <th>المبلغ المدفوع</th>
-                    <th>عدد الأعضاء</th>
-                </tr>
-                <tr>
-                    <th>المبلغ المدفوع</th>
-                    <th>عدد الأعضاء</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($payment_dist as $amount => $count): ?>
-                <tr>
-                    <td><?= number_format($amount,2) ?> جنيه</td>
-                    <td><?= $count ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
     </div>
-</body>
 
-</html>
+    <h2 class="section-title">توزيع الفرق</h2>
+    <div class="cards">';
+
+foreach ($teams as $team) {
+    $count = $conn->query("SELECT COUNT(*) as c FROM employees WHERE team='$team'")->fetch_assoc()['c'];
+    $pageContent .= '
+        <div class="card" style="border-top:5px solid #' . substr(md5($team), 0, 6) . '">
+            <h3>' . htmlspecialchars($team) . '</h3>
+            <p>عدد الكشافة: ' . $count . '</p>
+            <a href="team_members.php?team=' . urlencode($team) . '" class="export-btn">عرض الأعضاء</a>
+            <a href="dashboard.php?team_export=' . urlencode($team) . '" class="export-btn">تحميل CSV</a>
+        </div>';
+}
+
+$pageContent .= '
+    </div>
+
+    <h2 class="section-title">توزيع المدفوعات</h2>
+    <table class="payment-table">
+        <thead>
+            <tr>
+                <th>المبلغ المدفوع</th>
+                <th>عدد الأعضاء</th>
+            </tr>
+        </thead>
+        <tbody>';
+
+foreach ($payment_dist as $amount => $count) {
+    $pageContent .= '
+            <tr>
+                <td>' . number_format($amount, 2) . ' جنيه</td>
+                <td>' . $count . '</td>
+            </tr>';
+}
+
+$pageContent .= '
+        </tbody>
+    </table>
+</div>';
+
+// Include the layout
+include 'layout.php';
+?>

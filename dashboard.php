@@ -226,13 +226,8 @@ if (isset($_GET['team_export'])) {
         </div>
 
         <h2>توزيع المدفوعات</h2>
-        <h2>توزيع المدفوعات</h2>
         <table class="payment-table">
             <thead>
-                <tr>
-                    <th>المبلغ المدفوع</th>
-                    <th>عدد الأعضاء</th>
-                </tr>
                 <tr>
                     <th>المبلغ المدفوع</th>
                     <th>عدد الأعضاء</th>

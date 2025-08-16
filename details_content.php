@@ -289,10 +289,10 @@ tfoot td {
             <?php endforeach; ?>
         </select>
 
-        <select name="case">
-            <option value="">فلترة بالحالة</option>
-            <option value="1" <?php if (isset($_GET['case']) && $_GET['case'] == '1') echo 'selected'; ?>>نعم</option>
-            <option value="0" <?php if (isset($_GET['case']) && $_GET['case'] == '0') echo 'selected'; ?>>لا</option>
+        <select name="is_case">
+            <option value="">Filter by Case</option>
+            <option value="1" <?php if ($is_case_filter === '1') echo 'selected'; ?>>نعم</option>
+            <option value="0" <?php if ($is_case_filter === '0') echo 'selected'; ?>>لا</option>
         </select>
 
         <button type="submit">تطبيق</button>

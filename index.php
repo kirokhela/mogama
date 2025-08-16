@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>محطوط تسجيل</title>
+    <title>التسجيل</title>
     <style>
     /* Changed from margin-left to margin-right */
     body {
@@ -126,7 +126,7 @@
     <?php include 'sidenav.php'; ?>
 
     <div class="main">
-        <h1>التسجيل</h1>
+        <h1> محطوط التسجيل</h1>
         <form action="submit.php" method="post">
             <div class="nice-form-group">
                 <label>الاسم</label>

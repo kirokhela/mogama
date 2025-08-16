@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>تسجيل</title>
+    <title>محطوط تسجيل</title>
     <style>
     /* Changed from margin-left to margin-right */
     body {
@@ -157,7 +157,7 @@
                 </select>
             </div>
 
-  
+
             <div class="nice-form-group" style="display: flex; align-items: center; gap: 6px;">
 
                 <label for="isCase" style="margin: 0; cursor: pointer; font-weight: bold;">حالة خاصة (IsCase)</label>

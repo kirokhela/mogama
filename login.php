@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     h3 {
         margin-bottom: 20px;
-        color: #0f766e;
+        color: #2c3e50;
         font-size: 22px;
     }
 
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     button {
-        background: #0f766e;
+        background: #2c3e50;
         color: #fff;
         border: none;
         cursor: pointer;
@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     button:hover {
-        background: #115e59;
+        background: #3498db;
     }
 
     .error {

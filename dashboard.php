@@ -67,7 +67,7 @@ body {
     color: #1e293b;
 }
 
-/* Cards Layout */
+/* Cards */
 .cards {
     display: flex;
     flex-wrap: wrap;
@@ -75,45 +75,42 @@ body {
     justify-content: center;
 }
 
-/* Card Style */
 .card {
     background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
     flex: 1;
-    min-width: 270px;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    overflow: hidden;
+    min-width: 260px;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .card:hover {
-    transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+    transform: translateY(-4px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
 }
 
-.card-header {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    color: #fff;
-    padding: 15px;
-    font-size: 1.2rem;
+.card h3 {
+    margin-bottom: 12px;
+    font-size: 1.3rem;
     font-weight: 600;
-    text-align: center;
+    color: #334155;
 }
 
-.card-header.green {
-    background: linear-gradient(135deg, #10b981, #059669);
-}
-
-.card-body {
-    padding: 20px;
-    text-align: center;
-}
-
-.card-body p {
-    font-size: 1.8rem;
+.card p {
+    font-size: 1.6rem;
     font-weight: bold;
-    color: #0f172a;
     margin: 10px 0;
+    color: #0f172a;
+}
+
+/* Total summary cards */
+.total-card {
+    border-top: 5px solid #2563eb;
+}
+.total-card:nth-child(2) {
+    border-top: 5px solid #10b981;
 }
 
 /* Section Titles */
@@ -129,33 +126,31 @@ body {
 .export-btn {
     background: #2563eb;
     color: #fff;
-    padding: 9px 18px;
-    border-radius: 50px;
+    padding: 10px 16px;
+    border-radius: 6px;
     font-size: 14px;
     font-weight: 600;
     text-decoration: none;
     transition: 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    display: inline-block;
     margin: 6px 4px;
 }
 
 .export-btn:hover {
     background: #1d4ed8;
-    transform: scale(1.07);
+    transform: scale(1.05);
 }
 
 /* Table */
 .payment-table {
     width: 100%;
-    max-width: 650px;
+    max-width: 600px;
     margin: 0 auto 50px;
     border-collapse: collapse;
-    border-radius: 14px;
+    border-radius: 12px;
     overflow: hidden;
     background: #fff;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .payment-table th, .payment-table td {
@@ -171,12 +166,8 @@ body {
     font-weight: 700;
 }
 
-.payment-table tr:nth-child(even) {
-    background: #f9fafb;
-}
-
 .payment-table tr:hover {
-    background: #eff6ff;
+    background: #f9fafb;
 }
 
 /* Responsive */
@@ -195,42 +186,34 @@ body {
     <h1 class="dashboard-title">لوحة التحكم - الكشافة</h1>
     
     <div class="cards">
-        <div class="card">
-            <div class="card-header"><span>👥 إجمالي الكشافة</span></div>
-            <div class="card-body">
-                <p>' . $total_scouts_all . '</p>
-            </div>
+        <div class="card total-card">
+            <h3>إجمالي الكشافة</h3>
+            <p>' . $total_scouts_all . '</p>
         </div>
-        <div class="card">
-            <div class="card-header green"><span>💰 إجمالي المدفوعات</span></div>
-            <div class="card-body">
-                <p>' . number_format($total_payment_all, 2) . ' جنيه</p>
-            </div>
+        <div class="card total-card">
+            <h3>إجمالي المدفوعات</h3>
+            <p>' . number_format($total_payment_all, 2) . ' جنيه</p>
         </div>
     </div>
 
-    <h2 class="section-title">🏅 توزيع الفرق</h2>
+    <h2 class="section-title">توزيع الفرق</h2>
     <div class="cards">';
 
 foreach ($teams as $team) {
     $count = $conn->query("SELECT COUNT(*) as c FROM employees WHERE team='$team'")->fetch_assoc()['c'];
     $pageContent .= '
-        <div class="card">
-            <div class="card-header" style="background: linear-gradient(135deg, #' . substr(md5($team), 0, 6) . ', #' . substr(md5(strrev($team)), 0, 6) . ');">
-                ' . htmlspecialchars($team) . '
-            </div>
-            <div class="card-body">
-                <p>👥 ' . $count . ' عضو</p>
-                <a href="team_members.php?team=' . urlencode($team) . '" class="export-btn">👀 عرض الأعضاء</a>
-                <a href="dashboard.php?team_export=' . urlencode($team) . '" class="export-btn">⬇️ تحميل CSV</a>
-            </div>
+        <div class="card" style="border-top:5px solid #' . substr(md5($team), 0, 6) . '">
+            <h3>' . htmlspecialchars($team) . '</h3>
+            <p>عدد الكشافة: ' . $count . '</p>
+            <a href="team_members.php?team=' . urlencode($team) . '" class="export-btn">عرض الأعضاء</a>
+            <a href="dashboard.php?team_export=' . urlencode($team) . '" class="export-btn">تحميل CSV</a>
         </div>';
 }
 
 $pageContent .= '
     </div>
 
-    <h2 class="section-title">💵 توزيع المدفوعات</h2>
+    <h2 class="section-title">توزيع المدفوعات</h2>
     <table class="payment-table">
         <thead>
             <tr>

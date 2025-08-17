@@ -25,6 +25,18 @@ $today_stats = $conn->query("
     WHERE DATE(`Timestamp`) = CURDATE()
 ")->fetch_assoc();
 
+// --- إحصائيات الأيام ---
+$days_stats = [];
+$days_query = $conn->query("
+    SELECT DATE(`Timestamp`) as day, COUNT(*) as members_count, SUM(payment) as total_payment
+    FROM employees
+    GROUP BY day
+    ORDER BY day DESC
+    LIMIT 7
+");
+while ($row = $days_query->fetch_assoc()) {
+    $days_stats[] = $row;
+}
 
 // --- توزيع المدفوعات ---
 $payment_dist = [];
@@ -237,6 +249,19 @@ foreach ($teams as $team) {
         </div>';
 }
 
+$pageContent .= '
+    </div>
+
+    <h2 class="section-title">إحصائيات الأيام السابقة</h2>
+    <div class="cards">';
+foreach ($days_stats as $day) {
+    $pageContent .= '
+        <div class="card day-card">
+            <h3>' . htmlspecialchars($day['day']) . '</h3>
+            <p>الأعضاء: ' . $day['members_count'] . '</p>
+            <p>المدفوعات: ' . number_format($day['total_payment'], 2) . ' جنيه</p>
+        </div>';
+}
 $pageContent .= '
     </div>
 

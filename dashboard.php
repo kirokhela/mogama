@@ -1,6 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 session_start();
 require_once 'db.php';
 
@@ -223,17 +221,6 @@ body {
         </div>
     </div>
 
-    <h2 class="section-title">إحصائيات اليوم</h2>
-    <div class="cards">
-        <div class="card day-card">
-            <h3>عدد الأعضاء اليوم</h3>
-            <p>' . $today_stats['members_count'] . '</p>
-        </div>
-        <div class="card day-card">
-            <h3>إجمالي المدفوعات اليوم</h3>
-            <p>' . number_format($today_stats['total_payment'], 2) . ' جنيه</p>
-        </div>
-    </div>
 
     <h2 class="section-title">توزيع الفرق</h2>
     <div class="cards">';

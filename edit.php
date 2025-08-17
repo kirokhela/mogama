@@ -134,8 +134,7 @@ a.cancel:hover {
     <div class="error"><?php echo htmlspecialchars($error); ?></div>
   <?php endif; ?>
   <form method="post">
-    <label>ID</label>
-    <input name="id" value="<?php echo htmlspecialchars($row['id']); ?>" readonly>
+    
     
     <label>Name</label>
     <input name="name" value="<?php echo htmlspecialchars($row['name']); ?>" required>

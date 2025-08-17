@@ -23,21 +23,6 @@ while ($row = $payment_query->fetch_assoc()) {
     $payment_dist[$row['pay']] = $row['count'];
 }
 
-// --- Cards per day (total scouts + total payment) ---
-$daily_stats = [];
-$daily_query = $conn->query("
-    SELECT DATE(created_at) as day,
-           COUNT(*) as members_count,
-           SUM(payment) as total_payment
-    FROM employees
-    GROUP BY DATE(created_at)
-    ORDER BY day DESC
-    LIMIT 7
-");
-while ($row = $daily_query->fetch_assoc()) {
-    $daily_stats[] = $row;
-}
-
 // --- تصدير CSV لكل فريق ---
 if (isset($_GET['team_export'])) {
     $team_name = $conn->real_escape_string($_GET['team_export']);
@@ -57,11 +42,143 @@ if (isset($_GET['team_export'])) {
 // Dashboard content
 $pageContent = '
 <style>
-/* your same CSS above ... */
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap");
 
-/* Extra for daily cards */
-.daily-card {
-    border-top: 5px solid #f59e0b;
+body {
+    font-family: "Cairo", sans-serif;
+    background: #f8fafc;
+    margin: 0;
+    direction: rtl;
+}
+
+/* Container */
+.dashboard-container {
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+/* Title */
+.dashboard-title {
+    text-align: center;
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin-bottom: 40px;
+    color: #1e293b;
+}
+
+/* Cards */
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    justify-content: center;
+}
+
+.card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    flex: 1;
+    min-width: 260px;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+.card h3 {
+    margin-bottom: 12px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.card p {
+    font-size: 1.6rem;
+    font-weight: bold;
+    margin: 10px 0;
+    color: #0f172a;
+}
+
+/* Total summary cards */
+.total-card {
+    border-top: 5px solid #2563eb;
+}
+.total-card:nth-child(2) {
+    border-top: 5px solid #10b981;
+}
+
+/* Section Titles */
+.section-title {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 50px 0 25px;
+    color: #2563eb;
+}
+
+/* Buttons */
+.export-btn {
+    background: #2563eb;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.2s;
+    display: inline-block;
+    margin: 6px 4px;
+}
+
+.export-btn:hover {
+    background: #1d4ed8;
+    transform: scale(1.05);
+}
+
+/* Table */
+.payment-table {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto 50px;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.payment-table th, .payment-table td {
+    padding: 14px;
+    text-align: center;
+    font-size: 15px;
+    color: #1e293b;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.payment-table th {
+    background: #f1f5f9;
+    font-weight: 700;
+}
+
+.payment-table tr:hover {
+    background: #f9fafb;
+}
+
+/* Responsive */
+@media(max-width:768px) {
+    .cards {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .dashboard-title {
+        font-size: 2rem;
+    }
 }
 </style>
 
@@ -77,19 +194,6 @@ $pageContent = '
             <h3>إجمالي المدفوعات</h3>
             <p>' . number_format($total_payment_all, 2) . ' جنيه</p>
         </div>
-    </div>
-
-    <h2 class="section-title">إحصائيات الأيام الأخيرة</h2>
-    <div class="cards">';
-foreach ($daily_stats as $stat) {
-    $pageContent .= '
-        <div class="card daily-card">
-            <h3>' . htmlspecialchars($stat['day']) . '</h3>
-            <p>عدد الأعضاء: ' . $stat['members_count'] . '</p>
-            <p>إجمالي المدفوعات: ' . number_format($stat['total_payment'], 2) . ' جنيه</p>
-        </div>';
-}
-$pageContent .= '
     </div>
 
     <h2 class="section-title">توزيع الفرق</h2>

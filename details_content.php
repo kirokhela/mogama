@@ -300,7 +300,7 @@ tfoot td {
     </form>
 
     <div class="count-box">
-        إجمالي المسجلين: <strong><?php echo $page_rows; ?></strong>
+        إجمالي المسجلين: <strong><?php echo count($data); ?></strong>
     </div>
 
     <div class="count-box">

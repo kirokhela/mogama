@@ -204,7 +204,7 @@ foreach ($teams as $team) {
     $pageContent .= '
         <div class="card" style="border-top:5px solid #' . substr(md5($team), 0, 6) . '">
             <h3>' . htmlspecialchars($team) . '</h3>
-            <p>عدد الكشافة: ' . $count . '</p>
+            <p>عدد: ' . $count . '</p>
             <a href="team_members.php?team=' . urlencode($team) . '" class="export-btn">عرض الأعضاء</a>
             <a href="dashboard.php?team_export=' . urlencode($team) . '" class="export-btn">تحميل CSV</a>
         </div>';

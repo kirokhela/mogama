@@ -16,6 +16,13 @@ while ($row = $teams_result->fetch_assoc()) {
 $total_scouts_all = $conn->query("SELECT COUNT(*) as c FROM employees")->fetch_assoc()['c'];
 $total_payment_all = $conn->query("SELECT SUM(payment) as sum_pay FROM employees")->fetch_assoc()['sum_pay'];
 
+// --- إحصائيات اليوم ---
+$today_stats = $conn->query("
+    SELECT COUNT(*) as members_count, SUM(payment) as total_payment
+    FROM employees
+    WHERE DATE(created_at) = CURDATE()
+")->fetch_assoc();
+
 // --- توزيع المدفوعات ---
 $payment_dist = [];
 $payment_query = $conn->query("SELECT ROUND(payment,2) as pay, COUNT(*) as count FROM employees GROUP BY pay ORDER BY pay ASC");
@@ -113,6 +120,11 @@ body {
     border-top: 5px solid #10b981;
 }
 
+/* Day cards */
+.day-card {
+    border-top: 5px solid #f59e0b;
+}
+
 /* Section Titles */
 .section-title {
     text-align: center;
@@ -193,6 +205,18 @@ body {
         <div class="card total-card">
             <h3>إجمالي المدفوعات</h3>
             <p>' . number_format($total_payment_all, 2) . ' جنيه</p>
+        </div>
+    </div>
+
+    <h2 class="section-title">إحصائيات اليوم</h2>
+    <div class="cards">
+        <div class="card day-card">
+            <h3>عدد الأعضاء اليوم</h3>
+            <p>' . $today_stats['members_count'] . '</p>
+        </div>
+        <div class="card day-card">
+            <h3>إجمالي المدفوعات اليوم</h3>
+            <p>' . number_format($today_stats['total_payment'], 2) . ' جنيه</p>
         </div>
     </div>
 

@@ -260,9 +260,10 @@ tfoot td {
     border-color: #007bff;
 }
 </style>
+
 <div class="page-title">تفاصيل الملتحقين</div>
 
-<?php if ($total_records > 0): ?>
+<?php if (count($data) > 0): ?>
 <div class="filters-container">
     <form method="get" class="filters-form">
         <input type="text" name="name" placeholder="البحث بالاسم..."
@@ -288,6 +289,7 @@ tfoot td {
             <?php endforeach; ?>
         </select>
 
+
         <select name="is_case">
             <option value="">Filter by Case</option>
             <option value="1" <?php if ($is_case_filter === '1') echo 'selected'; ?>>نعم</option>
@@ -298,7 +300,7 @@ tfoot td {
     </form>
 
     <div class="count-box">
-        إجمالي المسجلين: <strong><?php echo $total_records; ?></strong>
+        إجمالي المسجلين: <strong><?php echo count($data); ?></strong>
     </div>
 
     <div class="count-box">
@@ -326,7 +328,7 @@ tfoot td {
             <tbody>
                 <?php foreach ($data as $i => $row): ?>
                 <tr>
-                    <td><?php echo $offset + $i + 1; ?></td>
+                    <td><?php echo $i + 1; ?></td>
                     <td><?php echo htmlspecialchars($row["id"]); ?></td>
                     <td><?php echo htmlspecialchars($row["name"]); ?></td>
                     <td><?php echo htmlspecialchars($row["phone"]); ?></td>
@@ -346,6 +348,14 @@ tfoot td {
                 </tr>
                 <?php endforeach; ?>
             </tbody>
+            <!-- <tfoot>
+                <tr>
+                    <td colspan="<?php echo is_admin() ? 10 : 9; ?>" style="text-align: center;">
+                        الإجمالي: <?php echo number_format($grand_total_payment, 2); ?></p>
+
+                    </td>
+                </tr>
+            </tfoot> -->
         </table>
 
         <div class="pagination">
@@ -364,6 +374,7 @@ tfoot td {
             <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page + 1])); ?>">Next &raquo;</a>
             <?php endif; ?>
         </div>
+
     </div>
 </div>
 

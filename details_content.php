@@ -29,7 +29,7 @@ body {
 
 .filters-container {
     background: #fff;
-    padding: 25px;
+    padding: 1rem;
     border-radius: 8px;
     margin-bottom: 25px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -288,6 +288,7 @@ tfoot td {
             </option>
             <?php endforeach; ?>
         </select>
+
 
         <select name="is_case">
             <option value="">Filter by Case</option>

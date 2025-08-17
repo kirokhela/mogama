@@ -54,6 +54,11 @@ function isActivePage($page) {
                     <span class="icon">📷</span>
                     <span class="text">مسح</span>
                 </a></li>
+
+            <li><a href="attendance.php" class="nav-link <?php echo isActivePage('attendance.php'); ?>">
+                    <span class="icon">👥</span>
+                    <span class="text">حضور</span>
+                </a></li>
             <li><a href="logout.php" class="nav-link <?php echo isActivePage('logout.php'); ?>">
                     <span class="icon">🚪</span>
                     <span class="text">تسجيل الخروج</span>

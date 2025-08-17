@@ -32,6 +32,8 @@ $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($page - 1) * $limit;
 
 // --- Count total rows + grand total ---
+
+
 $count_sql = "SELECT COUNT(*) as total, SUM(payment) as grand_total FROM employees WHERE 1=1";
 if ($name_filter) $count_sql .= " AND name LIKE '%$name_filter%'";
 if ($date_filter) $count_sql .= " AND DATE(Timestamp) = '$date_filter'";

@@ -29,7 +29,7 @@ body {
 
 .filters-container {
     background: #fff;
-    padding: 25px;
+    padding: 1rem;
     border-radius: 8px;
     margin-bottom: 25px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -289,6 +289,7 @@ tfoot td {
             <?php endforeach; ?>
         </select>
 
+
         <select name="is_case">
             <option value="">Filter by Case</option>
             <option value="1" <?php if ($is_case_filter === '1') echo 'selected'; ?>>نعم</option>
@@ -299,7 +300,7 @@ tfoot td {
     </form>
 
     <div class="count-box">
-        إجمالي المسجلين: <strong><?php echo count($data); ?></strong>
+        إجمالي المسجلين: <strong><?php echo $page_rows; ?></strong>
     </div>
 
     <div class="count-box">

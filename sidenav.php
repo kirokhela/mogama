@@ -8,6 +8,7 @@ $menu_items = [
     'dashboard.php' => ['label' => 'لوحة التحكم', 'icon' => '📊'],
     'logout.php' => ['label' => 'تسجيل الخروج', 'icon' => '🚪'],
     'scan.php' => ['label' => 'مسح', 'icon' => '📷'],
+'attendance.php' => ['label' => 'حضور', 'icon' => '👥'],
 ];
 ?>
 <div class="side-nav">

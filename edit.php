@@ -11,14 +11,18 @@ if (!$id) {
 
 // On POST -> update
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name    = trim($_POST['name'] ?? '');
-    $phone   = trim($_POST['phone'] ?? '');
-    $team    = trim($_POST['team'] ?? '');
-    $grade   = trim($_POST['grade'] ?? '');
-    $payment = trim($_POST['payment'] ?? '');
+    $name       = trim($_POST['name'] ?? '');
+    $phone      = trim($_POST['phone'] ?? '');
+    $team       = trim($_POST['team'] ?? '');
+    $grade      = trim($_POST['grade'] ?? '');
+    $payment    = trim($_POST['payment'] ?? '');
+    $isCase     = isset($_POST['isCase']) ? 1 : 0;
 
-    $stmt = $conn->prepare("UPDATE employees SET name=?, phone=?, team=?, grade=?, payment=? WHERE id=?");
-    $stmt->bind_param("ssssss", $name, $phone, $team, $grade, $payment, $id);
+    $stmt = $conn->prepare("UPDATE employees 
+        SET name=?, phone=?, team=?, grade=?, payment=?, IsCase=? 
+        WHERE id=?");
+    $stmt->bind_param("sssssis", $name, $phone, $team, $grade, $payment, $isCase, $id);
+
     if ($stmt->execute()) {
         $stmt->close();
         header('Location: detail.php');
@@ -30,7 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // fetch existing row
-$stmt = $conn->prepare("SELECT id, name, phone, team, grade, payment FROM employees WHERE id=? LIMIT 1");
+$stmt = $conn->prepare("SELECT id, name, phone, team, grade, payment, IsCase 
+                        FROM employees WHERE id=? LIMIT 1");
 $stmt->bind_param("s", $id);
 $stmt->execute();
 $res = $stmt->get_result();
@@ -55,7 +60,7 @@ body {
     color: #333;
 }
 .form-box {
-    max-width: 600px;
+    max-width: 650px;
     margin: 0 auto;
     background: #fff;
     padding: 25px 30px;
@@ -78,6 +83,14 @@ input, select {
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 14px;
+}
+input[readonly] {
+    background: #f0f0f0;
+    cursor: not-allowed;
+}
+input[type="checkbox"] {
+    width: auto;
+    margin-top: 10px;
 }
 button {
     margin-top: 20px;
@@ -121,6 +134,9 @@ a.cancel:hover {
     <div class="error"><?php echo htmlspecialchars($error); ?></div>
   <?php endif; ?>
   <form method="post">
+    <label>ID</label>
+    <input name="id" value="<?php echo htmlspecialchars($row['id']); ?>" readonly>
+    
     <label>Name</label>
     <input name="name" value="<?php echo htmlspecialchars($row['name']); ?>" required>
     
@@ -135,6 +151,11 @@ a.cancel:hover {
     
     <label>Payment</label>
     <input name="payment" value="<?php echo htmlspecialchars($row['payment']); ?>" required>
+    
+    <label>
+      <input type="checkbox" name="isCase" value="1" <?php echo $row['IsCase'] ? 'checked' : ''; ?>>
+      Is Case
+    </label>
     
     <button type="submit">Save</button>
     <a href="detail.php" class="cancel">Cancel</a>

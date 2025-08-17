@@ -22,8 +22,9 @@ $total_payment_all = $conn->query("SELECT SUM(payment) as sum_pay FROM employees
 $today_stats = $conn->query("
     SELECT COUNT(*) as members_count, SUM(payment) as total_payment
     FROM employees
-    WHERE DATE(created_at) = CURDATE()
+    WHERE DATE(`Timestamp`) = CURDATE()
 ")->fetch_assoc();
+
 
 // --- توزيع المدفوعات ---
 $payment_dist = [];

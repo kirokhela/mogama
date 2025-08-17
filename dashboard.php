@@ -42,154 +42,142 @@ if (isset($_GET['team_export'])) {
 // Dashboard content
 $pageContent = '
 <style>
-.dashboard-container {
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap");
+
+body {
     font-family: "Cairo", sans-serif;
-    background: white;
-    padding: 30px;
+    background: #f8fafc;
+    margin: 0;
     direction: rtl;
-    text-align: center;
 }
 
+/* Container */
+.dashboard-container {
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+/* Title */
 .dashboard-title {
     text-align: center;
-    color: #2d3748;
-    font-size: 2.5rem;
+    font-size: 2.4rem;
     font-weight: 700;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
+    color: #1e293b;
 }
 
+/* Cards */
 .cards {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
-    margin-bottom: 40px;
+    gap: 25px;
     justify-content: center;
 }
 
 .card {
     background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
     flex: 1;
-    min-width: 220px;
+    min-width: 260px;
     text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
 }
 
 .card h3 {
-    margin-bottom: 15px;
-    color: #2c3e50;
+    margin-bottom: 12px;
+    font-size: 1.3rem;
     font-weight: 600;
+    color: #334155;
 }
 
 .card p {
-    font-size: 18px;
+    font-size: 1.6rem;
     font-weight: bold;
-    margin: 8px 0;
-    text-align: center;
+    margin: 10px 0;
+    color: #0f172a;
 }
 
+/* Total summary cards */
 .total-card {
-    background: #2c3e50;
-    color: #fff;
-    border-top: 5px solid #0d665b;
+    border-top: 5px solid #2563eb;
+}
+.total-card:nth-child(2) {
+    border-top: 5px solid #10b981;
 }
 
-.total-card h3,
-.total-card p {
-    color: #fff;
-}
-
+/* Section Titles */
 .section-title {
-    color: #3498db;
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin: 30px 0 20px 0;
     text-align: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 50px 0 25px;
+    color: #2563eb;
 }
 
+/* Buttons */
 .export-btn {
-    background: #2c3e50;
+    background: #2563eb;
     color: #fff;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
     text-decoration: none;
-    margin: 5px;
+    transition: 0.2s;
     display: inline-block;
-    font-size: 13px;
-    transition: background 0.2s;
+    margin: 6px 4px;
 }
 
 .export-btn:hover {
-    background: #3498db;
+    background: #1d4ed8;
+    transform: scale(1.05);
 }
 
+/* Table */
 .payment-table {
     width: 100%;
-    max-width: 500px;
-    margin: 0 auto 40px auto;
+    max-width: 600px;
+    margin: 0 auto 50px;
     border-collapse: collapse;
-    background: #fff;
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-.payment-table th,
-.payment-table td {
-    padding: 12px;
+.payment-table th, .payment-table td {
+    padding: 14px;
     text-align: center;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 14px;
+    font-size: 15px;
+    color: #1e293b;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .payment-table th {
-    background: #f8fafc;
-    color: #000;
-    font-weight: 600;
-}
-
-.payment-table tr:nth-child(even) {
-    background: #fafafa;
+    background: #f1f5f9;
+    font-weight: 700;
 }
 
 .payment-table tr:hover {
-    background: #f1f5f9;
+    background: #f9fafb;
 }
 
 /* Responsive */
 @media(max-width:768px) {
-    .dashboard-container {
-        padding: 20px;
-    }
-    
-    .dashboard-title {
-        font-size: 2rem;
-    }
-    
     .cards {
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
     }
-    
-    .card {
-        max-width: 90%;
-    }
-    
-    .export-btn {
-        display: block;
-        margin: 5px 0;
-    }
-}
-
-@media(max-width:480px) {
-    .card {
-        max-width: 100%;
-    }
-    
-    .payment-table {
-        max-width: 100%;
+    .dashboard-title {
+        font-size: 2rem;
     }
 }
 </style>
@@ -249,5 +237,5 @@ $pageContent .= '
 </div>';
 
 // Include the layout
-include 'layout.php';
+include "layout.php";
 ?>

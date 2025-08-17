@@ -33,7 +33,7 @@ $qrCodeFileName = $uploadDir . $id . '.png';
 // Save the QR code image to the server
 if (file_put_contents($qrCodeFileName, $qrCodeImageData)) {
     // Create the URL to access the QR code image
-    $qrCodeImageUrl = 'http://mogamaaa.shamandorascout.com/' . $qrCodeFileName;
+    $qrCodeImageUrl = 'http://mogama.shamandorascout.com/' . $qrCodeFileName;
 
     // Store the image URL in the session for later use
     session_start();

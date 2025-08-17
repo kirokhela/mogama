@@ -29,7 +29,7 @@ if (isset($_GET['id'])) {
         $phone = $row['phone']; // ✅ Get phone from database
 
         // QR Code URL
-        $qrCodeImageUrl = "http://mogamaaa.shamandorascout.com/qrcodes/" . $serialNumber . ".png";
+        $qrCodeImageUrl = "http://mogama.shamandorascout.com/qrcodes/" . $serialNumber . ".png";
 
         // WhatsApp message in English + Arabic
         $whatsappMessage = "Hello $name,\n\n"

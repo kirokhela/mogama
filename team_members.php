@@ -12,11 +12,25 @@ if (isset($_GET['download_csv'])) {
     $output = fopen('php://output', 'w');
     $res = $conn->query("SHOW COLUMNS FROM employees");
     $cols = [];
-    while($c = $res->fetch_assoc()) $cols[] = $c['Field'];
+    while($c = $res->fetch_assoc()) {
+        if ($c['Field'] != 'scan_count') { // إزالة scan_count
+            $cols[] = $c['Field'];
+        }
+    }
     fputcsv($output, array_merge(['#'], $cols));
     $members = $conn->query("SELECT * FROM employees WHERE team='$team'");
     $counter = 1;
-    while($row = $members->fetch_assoc()) fputcsv($output, array_merge([$counter++], $row));
+    while($row = $members->fetch_assoc()) {
+        $data = [];
+        foreach ($cols as $col) {
+            if ($col === 'IsCase') {
+                $data[] = $row[$col] == 1 ? "Yes" : "No"; // تحويل IsCase
+            } else {
+                $data[] = $row[$col];
+            }
+        }
+        fputcsv($output, array_merge([$counter++], $data));
+    }
     fclose($output);
     exit();
 }
@@ -25,7 +39,11 @@ if (isset($_GET['download_csv'])) {
 $members = $conn->query("SELECT * FROM employees WHERE team='$team'");
 $res = $conn->query("SHOW COLUMNS FROM employees");
 $cols = [];
-while($c = $res->fetch_assoc()) $cols[] = $c['Field'];
+while($c = $res->fetch_assoc()) {
+    if ($c['Field'] != 'scan_count') { // إزالة scan_count
+        $cols[] = $c['Field'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -123,7 +141,7 @@ while($c = $res->fetch_assoc()) $cols[] = $c['Field'];
                 <tr>
                     <th>#</th>
                     <?php foreach($cols as $col): ?>
-                    <th><?= htmlspecialchars($col) ?></th>
+                        <th><?= htmlspecialchars($col) ?></th>
                     <?php endforeach; ?>
                 </tr>
             </thead>
@@ -133,7 +151,15 @@ while($c = $res->fetch_assoc()) $cols[] = $c['Field'];
                 <tr>
                     <td><?= $counter++ ?></td>
                     <?php foreach($cols as $col): ?>
-                    <td><?= htmlspecialchars($row[$col]) ?></td>
+                        <td>
+                            <?php 
+                                if ($col === 'IsCase') {
+                                    echo $row[$col] == 1 ? "Yes" : "No";
+                                } else {
+                                    echo htmlspecialchars($row[$col]);
+                                }
+                            ?>
+                        </td>
                     <?php endforeach; ?>
                 </tr>
                 <?php endwhile; ?>

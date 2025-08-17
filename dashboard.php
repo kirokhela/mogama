@@ -42,174 +42,190 @@ if (isset($_GET['team_export'])) {
 // Dashboard content
 $pageContent = '
 <style>
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap");
-
-body {
-    margin: 0;
-    background: linear-gradient(135deg, #4f46e5, #9333ea);
-    font-family: "Cairo", sans-serif;
-    color: #fff;
-    direction: rtl;
-}
-
-/* Container */
 .dashboard-container {
-    padding: 40px 20px;
-    max-width: 1200px;
-    margin: auto;
+    font-family: "Cairo", sans-serif;
+    background: white;
+    padding: 30px;
+    direction: rtl;
+    text-align: center;
 }
 
-/* Title */
 .dashboard-title {
     text-align: center;
-    font-size: 2.8rem;
+    color: #2d3748;
+    font-size: 2.5rem;
     font-weight: 700;
-    margin-bottom: 40px;
-    color: #fff;
-    letter-spacing: 1px;
+    margin-bottom: 30px;
 }
 
-/* Cards */
 .cards {
     display: flex;
     flex-wrap: wrap;
-    gap: 25px;
+    gap: 20px;
+    margin-bottom: 40px;
     justify-content: center;
 }
 
 .card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    padding: 25px;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     flex: 1;
-    min-width: 250px;
+    min-width: 220px;
     text-align: center;
-    transition: transform 0.2s, background 0.2s;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    background: rgba(255, 255, 255, 0.15);
 }
 
 .card h3 {
     margin-bottom: 15px;
-    font-size: 1.4rem;
+    color: #2c3e50;
     font-weight: 600;
-    color: #fff;
 }
 
 .card p {
-    font-size: 1.6rem;
+    font-size: 18px;
     font-weight: bold;
-    margin: 10px 0;
-    color: #f9fafb;
-}
-
-/* Section Titles */
-.section-title {
+    margin: 8px 0;
     text-align: center;
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 50px 0 25px;
-    color: #facc15;
 }
 
-/* Buttons */
-.export-btn {
-    background: #facc15;
-    color: #000;
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-size: 14px;
+.total-card {
+    background: #2c3e50;
+    color: #fff;
+    border-top: 5px solid #0d665b;
+}
+
+.total-card h3,
+.total-card p {
+    color: #fff;
+}
+
+.section-title {
+    color: #3498db;
+    font-size: 1.8rem;
     font-weight: 600;
+    margin: 30px 0 20px 0;
+    text-align: center;
+}
+
+.export-btn {
+    background: #2c3e50;
+    color: #fff;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
     text-decoration: none;
-    transition: 0.2s;
+    margin: 5px;
     display: inline-block;
-    margin: 6px 4px;
+    font-size: 13px;
+    transition: background 0.2s;
 }
 
 .export-btn:hover {
-    background: #fde047;
-    transform: scale(1.05);
+    background: #3498db;
 }
 
-/* Table */
 .payment-table {
     width: 100%;
-    max-width: 600px;
-    margin: 0 auto 50px;
+    max-width: 500px;
+    margin: 0 auto 40px auto;
     border-collapse: collapse;
-    border-radius: 12px;
+    background: #fff;
+    border-radius: 8px;
     overflow: hidden;
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(8px);
-    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.payment-table th, .payment-table td {
-    padding: 14px;
+.payment-table th,
+.payment-table td {
+    padding: 12px;
     text-align: center;
-    font-size: 15px;
-    color: #fff;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
 }
 
 .payment-table th {
-    background: rgba(0,0,0,0.3);
-    font-weight: 700;
+    background: #f8fafc;
+    color: #000;
+    font-weight: 600;
+}
+
+.payment-table tr:nth-child(even) {
+    background: #fafafa;
 }
 
 .payment-table tr:hover {
-    background: rgba(255,255,255,0.15);
+    background: #f1f5f9;
 }
 
 /* Responsive */
 @media(max-width:768px) {
+    .dashboard-container {
+        padding: 20px;
+    }
+    
+    .dashboard-title {
+        font-size: 2rem;
+    }
+    
     .cards {
         flex-direction: column;
-        align-items: stretch;
+        align-items: center;
     }
-    .dashboard-title {
-        font-size: 2.2rem;
+    
+    .card {
+        max-width: 90%;
+    }
+    
+    .export-btn {
+        display: block;
+        margin: 5px 0;
+    }
+}
+
+@media(max-width:480px) {
+    .card {
+        max-width: 100%;
+    }
+    
+    .payment-table {
+        max-width: 100%;
     }
 }
 </style>
 
 <div class="dashboard-container">
-    <h1 class="dashboard-title">✨ لوحة التحكم - الكشافة ✨</h1>
+    <h1 class="dashboard-title">لوحة التحكم - الكشافة</h1>
     
     <div class="cards">
-        <div class="card">
+        <div class="card total-card">
             <h3>إجمالي الكشافة</h3>
             <p>' . $total_scouts_all . '</p>
         </div>
-        <div class="card">
+        <div class="card total-card">
             <h3>إجمالي المدفوعات</h3>
             <p>' . number_format($total_payment_all, 2) . ' جنيه</p>
         </div>
     </div>
 
-    <h2 class="section-title">📌 توزيع الفرق</h2>
+    <h2 class="section-title">توزيع الفرق</h2>
     <div class="cards">';
 
 foreach ($teams as $team) {
     $count = $conn->query("SELECT COUNT(*) as c FROM employees WHERE team='$team'")->fetch_assoc()['c'];
     $pageContent .= '
-        <div class="card">
+        <div class="card" style="border-top:5px solid #' . substr(md5($team), 0, 6) . '">
             <h3>' . htmlspecialchars($team) . '</h3>
             <p>عدد الكشافة: ' . $count . '</p>
-            <a href="team_members.php?team=' . urlencode($team) . '" class="export-btn">👥 عرض الأعضاء</a>
-            <a href="dashboard.php?team_export=' . urlencode($team) . '" class="export-btn">⬇️ تحميل CSV</a>
+            <a href="team_members.php?team=' . urlencode($team) . '" class="export-btn">عرض الأعضاء</a>
+            <a href="dashboard.php?team_export=' . urlencode($team) . '" class="export-btn">تحميل CSV</a>
         </div>';
 }
 
 $pageContent .= '
     </div>
 
-    <h2 class="section-title">💰 توزيع المدفوعات</h2>
+    <h2 class="section-title">توزيع المدفوعات</h2>
     <table class="payment-table">
         <thead>
             <tr>
@@ -233,5 +249,5 @@ $pageContent .= '
 </div>';
 
 // Include the layout
-include "layout.php";
+include 'layout.php';
 ?>

@@ -7,45 +7,38 @@ if (!$team) die("No team specified.");
 
 // ================== CSV DOWNLOAD ==================
 if (isset($_GET['download_csv'])) {
-    // Fetch only the needed columns
-    $sql = "SELECT id, name, grade , payment, IsCase 
+    $sql = "SELECT id, name, grade, payment, IsCase 
             FROM employees 
             WHERE team = '$team'";
     $members = $conn->query($sql);
 
-    // CSV headers
     header('Content-Type: text/csv; charset=UTF-8');
     header('Content-Disposition: attachment;filename="'.$team.'_members.csv"');
-    echo "\xEF\xBB\xBF"; // BOM for Excel UTF-8
+    echo "\xEF\xBB\xBF"; 
 
     $output = fopen('php://output', 'w');
+    fputcsv($output, ['ID', 'NAME', 'Grade', 'Payment', 'IsCase']);
 
-    // Header row
-    fputcsv($output, ['ID', 'NAME', 'grade' , 'PAYMENT', 'IsCase']);
-
-    // Data rows
     while ($row = $members->fetch_assoc()) {
         $isCase = $row['IsCase'] == 1 ? "Yes" : "No";
         fputcsv($output, [
             $row['id'],
             $row['name'],
-             $row['grade'],
+            $row['grade'],
             $row['payment'],
             $isCase
         ]);
     }
-
     fclose($output);
-    exit; // 🚨 stop here so no HTML is sent
+    exit;
 }
 // ================== END CSV DOWNLOAD ==================
 
-// Fetch members for display in table
 $members = $conn->query("SELECT * FROM employees WHERE team='$team'");
 $res = $conn->query("SHOW COLUMNS FROM employees");
 $cols = [];
 while ($c = $res->fetch_assoc()) {
-    if ($c['Field'] != 'scan_count') { // إزالة scan_count
+    if ($c['Field'] != 'scan_count') {
         $cols[] = $c['Field'];
     }
 }
@@ -64,12 +57,12 @@ while ($c = $res->fetch_assoc()) {
         background: #f4f4f4;
         color: #333;
         display: flex;
+        flex-direction: row;
     }
 
     .main-content {
         margin-right: 220px;
-        /* because sidenav is on the right in RTL */
-        padding: 30px;
+        padding: 20px;
         flex: 1;
         display: flex;
         flex-direction: column;
@@ -79,11 +72,12 @@ while ($c = $res->fetch_assoc()) {
     h1 {
         text-align: center;
         color: #0f766e;
+        font-size: 1.5rem;
     }
 
     .cards {
         display: flex;
-        gap: 20px;
+        gap: 10px;
         margin-bottom: 20px;
         flex-wrap: wrap;
         justify-content: center;
@@ -91,21 +85,28 @@ while ($c = $res->fetch_assoc()) {
 
     .btn {
         display: inline-block;
-        padding: 10px 20px;
+        padding: 10px 15px;
         background: #0f766e;
         color: #fff;
         text-decoration: none;
         border-radius: 6px;
         text-align: center;
+        font-size: 14px;
+        min-width: 120px;
     }
 
     .btn:hover {
         background: #0d665b;
     }
 
+    .table-container {
+        width: 100%;
+        overflow-x: auto; /* ✅ Scroll on small screens */
+    }
+
     table {
         width: 100%;
-        max-width: 1000px;
+        min-width: 600px; /* prevent squishing too much */
         border-collapse: collapse;
         background: #fff;
         border-radius: 8px;
@@ -116,9 +117,10 @@ while ($c = $res->fetch_assoc()) {
 
     table th,
     table td {
-        padding: 12px;
+        padding: 10px;
         text-align: center;
         border-bottom: 1px solid #eee;
+        font-size: 14px;
     }
 
     table th {
@@ -128,6 +130,27 @@ while ($c = $res->fetch_assoc()) {
 
     tr:hover {
         background: #f1f1f1;
+    }
+
+    /* ✅ Responsive adjustments */
+    @media (max-width: 768px) {
+        body {
+            flex-direction: column;
+        }
+
+        .main-content {
+            margin-right: 0;
+            padding: 15px;
+        }
+
+        .btn {
+            flex: 1 1 100%;
+            font-size: 13px;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+        }
     }
     </style>
 </head>
@@ -141,35 +164,37 @@ while ($c = $res->fetch_assoc()) {
             <a href="team_members.php?team=<?= urlencode($team) ?>&download_csv=1" class="btn">📥 تحميل CSV</a>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <?php foreach ($cols as $col): ?>
-                        <th><?= htmlspecialchars($col) ?></th>
-                    <?php endforeach; ?>
-                </tr>
-            </thead>
-            <tbody>
-                <?php $counter = 1; ?>
-                <?php while ($row = $members->fetch_assoc()): ?>
-                <tr>
-                    <td><?= $counter++ ?></td>
-                    <?php foreach ($cols as $col): ?>
-                        <td>
-                            <?php 
-                                if ($col === 'IsCase') {
-                                    echo $row[$col] == 1 ? "Yes" : "No";
-                                } else {
-                                    echo htmlspecialchars($row[$col]);
-                                }
-                            ?>
-                        </td>
-                    <?php endforeach; ?>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <?php foreach ($cols as $col): ?>
+                            <th><?= htmlspecialchars($col) ?></th>
+                        <?php endforeach; ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $counter = 1; ?>
+                    <?php while ($row = $members->fetch_assoc()): ?>
+                    <tr>
+                        <td><?= $counter++ ?></td>
+                        <?php foreach ($cols as $col): ?>
+                            <td>
+                                <?php 
+                                    if ($col === 'IsCase') {
+                                        echo $row[$col] == 1 ? "Yes" : "No";
+                                    } else {
+                                        echo htmlspecialchars($row[$col]);
+                                    }
+                                ?>
+                            </td>
+                        <?php endforeach; ?>
+                    </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </body>
 

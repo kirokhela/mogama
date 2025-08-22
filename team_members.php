@@ -8,7 +8,7 @@ if (!$team) die("No team specified.");
 // ================== CSV DOWNLOAD ==================
 if (isset($_GET['download_csv'])) {
     // Fetch only the needed columns
-    $sql = "SELECT id, name, payment, IsCase 
+    $sql = "SELECT id, name, grade , payment, IsCase 
             FROM employees 
             WHERE team = '$team'";
     $members = $conn->query($sql);
@@ -21,7 +21,7 @@ if (isset($_GET['download_csv'])) {
     $output = fopen('php://output', 'w');
 
     // Header row
-    fputcsv($output, ['ID', 'NAME', 'PAYMENT', 'IsCase']);
+    fputcsv($output, ['ID', 'NAME', 'grade' , 'PAYMENT', 'IsCase']);
 
     // Data rows
     while ($row = $members->fetch_assoc()) {
@@ -29,6 +29,7 @@ if (isset($_GET['download_csv'])) {
         fputcsv($output, [
             $row['id'],
             $row['name'],
+             $row['grade'],
             $row['payment'],
             $isCase
         ]);

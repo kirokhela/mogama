@@ -261,8 +261,8 @@ body {
         <div class="card total-card">
             <h3>إجمالي الكشافة</h3>
             <p>' . $total_scouts_all . '</p>
-            <a href="dashboard.php?all_export=1" class="export-btn">تحميل الكل</a>
-        </div>
+            <!-- <a href="dashboard.php?all_export=1" class="export-btn">تحميل الكل</a> -->
+            </div>
         <div class="card total-card">
             <h3>إجمالي المدفوعات</h3>
             <p>' . number_format($total_payment_all, 2) . ' جنيه</p>

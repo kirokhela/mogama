@@ -1,15 +1,18 @@
 <h1>أعضاء فريق <?= htmlspecialchars($team) ?></h1>
 
+<!-- Action Buttons -->
 <div class="cards">
     <a href="dashboard.php" class="btn">⬅ رجوع للرئيسية</a>
     <a href="team_members.php?team=<?= urlencode($team) ?>&download_csv=1" class="btn">📥 تحميل CSV</a>
 </div>
 
+<!-- Summary -->
 <div class="summary">
     <p>إجمالي الأعضاء: <strong><?= $total_rows ?></strong></p>
     <p>إجمالي المدفوعات: <strong><?= number_format($total_payment, 2) ?></strong></p>
 </div>
 
+<!-- Table -->
 <div class="table-container">
     <table>
         <thead>
@@ -46,8 +49,7 @@
 <?php if ($total_pages > 1): ?>
 <div class="pagination">
     <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-        <a href="?team=<?= urlencode($team) ?>&page=<?= $i ?>" 
-           class="<?= ($i == $page) ? 'active' : '' ?>">
+        <a href="?team=<?= urlencode($team) ?>&page=<?= $i ?>" class="<?= ($i == $page) ? 'active' : '' ?>">
             <?= $i ?>
         </a>
     <?php endfor; ?>

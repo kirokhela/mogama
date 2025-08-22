@@ -6,40 +6,34 @@ $team = isset($_GET['team']) ? $conn->real_escape_string($_GET['team']) : '';
 if (!$team) die("No team specified.");
 
 // CSV download
-// CSV download
 if (isset($_GET['download_csv'])) {
-    // UTF-8 with BOM for Arabic support
     header('Content-Type: text/csv; charset=UTF-8');
-    header('Content-Disposition: attachment;filename="'.$team.'_members.csv"');
-    echo "\xEF\xBB\xBF"; // BOM
-
+    header('Content-Disposition: attachment; filename="team_members.csv"');
+    
     $output = fopen('php://output', 'w');
 
-    // Header row (only required columns)
-    fputcsv($output, ['ID', 'NAME', 'DATE', 'PAYMENT', 'IsCase']);
+    // CSV header
+    fputcsv($output, ['ID', 'Name', 'Date', 'Payment', 'IsCase']);
 
-    // Get only required columns
-    $members = $conn->query("SELECT id, name, date, payment, IsCase FROM employees WHERE team='$team'");
+    // Fetch data
+    $sql = "SELECT id, name, DATE(date) as only_date, payment, 
+                   CASE WHEN isCase = 1 THEN 'Yes' ELSE 'No' END as IsCase
+            FROM employees 
+            WHERE team = '$team'";
+    $result = $conn->query($sql);
 
-    while ($row = $members->fetch_assoc()) {
-        // Format DATE (keep only YYYY-MM-DD)
-        $dateOnly = date("Y-m-d", strtotime($row['date']));
-
-        // Format IsCase
-        $isCase = $row['IsCase'] == 1 ? "Yes" : "No";
-
-        // Write row to CSV
+    while ($row = $result->fetch_assoc()) {
         fputcsv($output, [
             $row['id'],
             $row['name'],
-            $dateOnly,
+            $row['only_date'],
             $row['payment'],
-            $isCase
+            $row['IsCase']
         ]);
     }
 
     fclose($output);
-    exit();
+    exit;
 }
 
 // Fetch members for display

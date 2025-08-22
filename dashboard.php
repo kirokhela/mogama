@@ -46,15 +46,32 @@ while ($row = $payment_query->fetch_assoc()) {
 // --- تصدير CSV لكل فريق ---
 if (isset($_GET['team_export'])) {
     $team_name = $conn->real_escape_string($_GET['team_export']);
-    header('Content-Type:text/csv');
+    header('Content-Type:text/csv; charset=UTF-8');
     header('Content-Disposition:attachment;filename="'.$team_name.'_members.csv"');
     $output = fopen('php://output', 'w');
+
+    // UTF-8 BOM for Excel (عشان العربي يبان صح)
+    fprintf($output, "\xEF\xBB\xBF");
+
+    // جلب أسماء الأعمدة
     $res = $conn->query("SHOW COLUMNS FROM employees");
     $cols = [];
     while($c = $res->fetch_assoc()) $cols[] = $c['Field'];
     fputcsv($output, $cols);
+
+    // جلب البيانات
     $members = $conn->query("SELECT * FROM employees WHERE team='$team_name'");
-    while($row = $members->fetch_assoc()) fputcsv($output, $row);
+    while($row = $members->fetch_assoc()) {
+        // نحافظ على أرقام التليفون كنص
+        if (isset($row['phone'])) {
+            $row['phone'] = "\t" . $row['phone'];
+        }
+        // نحافظ على id كنص برضه لو عايز
+        if (isset($row['id'])) {
+            $row['id'] = "'" . $row['id'];
+        }
+        fputcsv($output, $row);
+    }
     fclose($output);
     exit();
 }

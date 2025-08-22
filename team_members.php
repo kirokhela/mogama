@@ -101,12 +101,12 @@ while ($c = $res->fetch_assoc()) {
 
     .table-container {
         width: 100%;
-        overflow-x: auto; /* ✅ Scroll on small screens */
+        overflow-x: auto;
     }
 
     table {
         width: 100%;
-        min-width: 600px; /* prevent squishing too much */
+        min-width: 600px;
         border-collapse: collapse;
         background: #fff;
         border-radius: 8px;
@@ -132,10 +132,37 @@ while ($c = $res->fetch_assoc()) {
         background: #f1f1f1;
     }
 
-    /* ✅ Responsive adjustments */
+    /* ✅ Mobile responsive */
     @media (max-width: 768px) {
         body {
             flex-direction: column;
+        }
+
+        .sidenav {
+            position: fixed;
+            top: 0;
+            right: -220px;
+            width: 220px;
+            height: 100%;
+            background: #1e3a5f;
+            transition: right 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidenav.active {
+            right: 0;
+        }
+
+        .menu-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: #0f766e;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1100;
         }
 
         .main-content {
@@ -143,9 +170,13 @@ while ($c = $res->fetch_assoc()) {
             padding: 15px;
         }
 
+        .cards {
+            flex-direction: column;
+            width: 100%;
+        }
+
         .btn {
-            flex: 1 1 100%;
-            font-size: 13px;
+            width: 100%;
         }
 
         h1 {
@@ -156,7 +187,11 @@ while ($c = $res->fetch_assoc()) {
 </head>
 
 <body>
+    <!-- ✅ Hamburger toggle (mobile only) -->
+    <div class="menu-toggle" onclick="toggleMenu()">☰ القائمة</div>
+
     <?php include 'sidenav.php'; ?>
+
     <div class="main-content">
         <h1>أعضاء فريق <?= htmlspecialchars($team) ?></h1>
         <div class="cards">
@@ -196,6 +231,11 @@ while ($c = $res->fetch_assoc()) {
             </table>
         </div>
     </div>
-</body>
 
+    <script>
+    function toggleMenu() {
+        document.querySelector('.sidenav').classList.toggle('active');
+    }
+    </script>
+</body>
 </html>

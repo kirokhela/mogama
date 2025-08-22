@@ -7,17 +7,26 @@ if (!$team) die("No team specified.");
 
 // CSV download
 if (isset($_GET['download_csv'])) {
-    header('Content-Type:text/csv');
-    header('Content-Disposition:attachment;filename="'.$team.'_members.csv"');
+    // UTF-8 with BOM for Arabic support
+    header('Content-Type: text/csv; charset=UTF-8');
+    header('Content-Disposition: attachment;filename="'.$team.'_members.csv"');
+    echo "\xEF\xBB\xBF"; // BOM
+
     $output = fopen('php://output', 'w');
+
+    // Get columns except scan_count
     $res = $conn->query("SHOW COLUMNS FROM employees");
     $cols = [];
     while($c = $res->fetch_assoc()) {
-        if ($c['Field'] != 'scan_count') { // إزالة scan_count
+        if ($c['Field'] != 'scan_count') {
             $cols[] = $c['Field'];
         }
     }
+
+    // Header row
     fputcsv($output, array_merge(['#'], $cols));
+
+    // Get members
     $members = $conn->query("SELECT * FROM employees WHERE team='$team'");
     $counter = 1;
     while($row = $members->fetch_assoc()) {
@@ -25,6 +34,9 @@ if (isset($_GET['download_csv'])) {
         foreach ($cols as $col) {
             if ($col === 'IsCase') {
                 $data[] = $row[$col] == 1 ? "Yes" : "No"; // تحويل IsCase
+            } elseif ($col === 'phone') {
+                // Force phone as text to avoid scientific notation
+                $data[] = "'" . $row[$col];
             } else {
                 $data[] = $row[$col];
             }
@@ -40,7 +52,7 @@ $members = $conn->query("SELECT * FROM employees WHERE team='$team'");
 $res = $conn->query("SHOW COLUMNS FROM employees");
 $cols = [];
 while($c = $res->fetch_assoc()) {
-    if ($c['Field'] != 'scan_count') { // إزالة scan_count
+    if ($c['Field'] != 'scan_count') {
         $cols[] = $c['Field'];
     }
 }
@@ -155,6 +167,8 @@ while($c = $res->fetch_assoc()) {
                             <?php 
                                 if ($col === 'IsCase') {
                                     echo $row[$col] == 1 ? "Yes" : "No";
+                                } elseif ($col === 'phone') {
+                                    echo htmlspecialchars($row[$col]); // Display phone normally in table
                                 } else {
                                     echo htmlspecialchars($row[$col]);
                                 }

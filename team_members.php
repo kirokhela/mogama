@@ -5,29 +5,27 @@ require_once 'db.php';
 $team = isset($_GET['team']) ? $conn->real_escape_string($_GET['team']) : '';
 if (!$team) die("No team specified.");
 
-// CSV download
-// CSV download
+// ================== CSV DOWNLOAD ==================
 if (isset($_GET['download_csv'])) {
+    // Fetch only the needed columns
+    $sql = "SELECT id, name, DATE(date) AS only_date, payment, IsCase 
+            FROM employees 
+            WHERE team = '$team'";
+    $members = $conn->query($sql);
+
+    // CSV headers
     header('Content-Type: text/csv; charset=UTF-8');
     header('Content-Disposition: attachment;filename="'.$team.'_members.csv"');
-    echo "\xEF\xBB\xBF"; // BOM for UTF-8
+    echo "\xEF\xBB\xBF"; // BOM for Excel UTF-8
 
     $output = fopen('php://output', 'w');
 
     // Header row
     fputcsv($output, ['ID', 'NAME', 'DATE', 'PAYMENT', 'IsCase']);
 
-    // Get only the required columns
-    $members = $conn->query("
-        SELECT id, name, DATE(date) as only_date, payment, IsCase 
-        FROM employees 
-        WHERE team='$team'
-    ");
-
+    // Data rows
     while ($row = $members->fetch_assoc()) {
-        // Format IsCase
         $isCase = $row['IsCase'] == 1 ? "Yes" : "No";
-
         fputcsv($output, [
             $row['id'],
             $row['name'],
@@ -38,14 +36,15 @@ if (isset($_GET['download_csv'])) {
     }
 
     fclose($output);
-    exit();
+    exit; // 🚨 stop here so no HTML is sent
 }
+// ================== END CSV DOWNLOAD ==================
 
-// Fetch members for display
+// Fetch members for display in table
 $members = $conn->query("SELECT * FROM employees WHERE team='$team'");
 $res = $conn->query("SHOW COLUMNS FROM employees");
 $cols = [];
-while($c = $res->fetch_assoc()) {
+while ($c = $res->fetch_assoc()) {
     if ($c['Field'] != 'scan_count') { // إزالة scan_count
         $cols[] = $c['Field'];
     }
@@ -146,17 +145,17 @@ while($c = $res->fetch_assoc()) {
             <thead>
                 <tr>
                     <th>#</th>
-                    <?php foreach($cols as $col): ?>
+                    <?php foreach ($cols as $col): ?>
                         <th><?= htmlspecialchars($col) ?></th>
                     <?php endforeach; ?>
                 </tr>
             </thead>
             <tbody>
                 <?php $counter = 1; ?>
-                <?php while($row = $members->fetch_assoc()): ?>
+                <?php while ($row = $members->fetch_assoc()): ?>
                 <tr>
                     <td><?= $counter++ ?></td>
-                    <?php foreach($cols as $col): ?>
+                    <?php foreach ($cols as $col): ?>
                         <td>
                             <?php 
                                 if ($col === 'IsCase') {

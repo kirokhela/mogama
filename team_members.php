@@ -5,57 +5,45 @@ require_once 'db.php';
 $team = isset($_GET['team']) ? $conn->real_escape_string($_GET['team']) : '';
 if (!$team) die("No team specified.");
 
-// CSV download
+// --- CSV download ---
 if (isset($_GET['download_csv'])) {
-    // UTF-8 with BOM for Arabic support
     header('Content-Type: text/csv; charset=UTF-8');
     header('Content-Disposition: attachment;filename="'.$team.'_members.csv"');
     echo "\xEF\xBB\xBF"; // BOM
 
     $output = fopen('php://output', 'w');
 
-    // Get columns except scan_count
-    $res = $conn->query("SHOW COLUMNS FROM employees");
-    $cols = [];
-    while($c = $res->fetch_assoc()) {
-        if ($c['Field'] != 'scan_count') {
-            $cols[] = $c['Field'];
-        }
-    }
+    // Keep only these columns
+    $cols = ['id', 'name', 'Timestamp', 'payment', 'IsCase'];
 
     // Header row
-    fputcsv($output, array_merge(['#'], $cols));
+    fputcsv($output, ['#', 'ID', 'Name', 'Date', 'Payment', 'IsCase']);
 
-    // Get members
     $members = $conn->query("SELECT * FROM employees WHERE team='$team'");
     $counter = 1;
     while($row = $members->fetch_assoc()) {
         $data = [];
+
         foreach ($cols as $col) {
             if ($col === 'IsCase') {
-                $data[] = $row[$col] == 1 ? "Yes" : "No"; // تحويل IsCase
-            } elseif ($col === 'phone') {
-                // Force phone as text to avoid scientific notation
-                $data[] = "'" . $row[$col];
+                $data[] = $row[$col] == 1 ? "Yes" : "No";
+            } elseif ($col === 'Timestamp') {
+                // Show only date part
+                $data[] = date("Y-m-d", strtotime($row[$col]));
             } else {
                 $data[] = $row[$col];
             }
         }
+
         fputcsv($output, array_merge([$counter++], $data));
     }
     fclose($output);
     exit();
 }
 
-// Fetch members for display
+// --- Fetch for display ---
 $members = $conn->query("SELECT * FROM employees WHERE team='$team'");
-$res = $conn->query("SHOW COLUMNS FROM employees");
-$cols = [];
-while($c = $res->fetch_assoc()) {
-    if ($c['Field'] != 'scan_count') {
-        $cols[] = $c['Field'];
-    }
-}
+$cols = ['id', 'name', 'Timestamp', 'payment', 'IsCase'];
 ?>
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -75,7 +63,6 @@ while($c = $res->fetch_assoc()) {
 
     .main-content {
         margin-right: 220px;
-        /* because sidenav is on the right in RTL */
         padding: 30px;
         flex: 1;
         display: flex;
@@ -112,7 +99,7 @@ while($c = $res->fetch_assoc()) {
 
     table {
         width: 100%;
-        max-width: 1000px;
+        max-width: 800px;
         border-collapse: collapse;
         background: #fff;
         border-radius: 8px;
@@ -152,9 +139,11 @@ while($c = $res->fetch_assoc()) {
             <thead>
                 <tr>
                     <th>#</th>
-                    <?php foreach($cols as $col): ?>
-                        <th><?= htmlspecialchars($col) ?></th>
-                    <?php endforeach; ?>
+                    <th>ID</th>
+                    <th>الاسم</th>
+                    <th>التاريخ</th>
+                    <th>الدفع</th>
+                    <th>IsCase</th>
                 </tr>
             </thead>
             <tbody>
@@ -162,19 +151,11 @@ while($c = $res->fetch_assoc()) {
                 <?php while($row = $members->fetch_assoc()): ?>
                 <tr>
                     <td><?= $counter++ ?></td>
-                    <?php foreach($cols as $col): ?>
-                        <td>
-                            <?php 
-                                if ($col === 'IsCase') {
-                                    echo $row[$col] == 1 ? "Yes" : "No";
-                                } elseif ($col === 'phone') {
-                                    echo htmlspecialchars($row[$col]); // Display phone normally in table
-                                } else {
-                                    echo htmlspecialchars($row[$col]);
-                                }
-                            ?>
-                        </td>
-                    <?php endforeach; ?>
+                    <td><?= htmlspecialchars($row['id']) ?></td>
+                    <td><?= htmlspecialchars($row['name']) ?></td>
+                    <td><?= date("Y-m-d", strtotime($row['Timestamp'])) ?></td>
+                    <td><?= htmlspecialchars($row['payment']) ?></td>
+                    <td><?= $row['IsCase'] == 1 ? "Yes" : "No" ?></td>
                 </tr>
                 <?php endwhile; ?>
             </tbody>

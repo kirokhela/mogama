@@ -44,38 +44,62 @@ while ($row = $payment_query->fetch_assoc()) {
 }
 
 // --- تصدير CSV لكل فريق ---
-// --- تصدير CSV لكل فريق ---
 if (isset($_GET['team_export'])) {
     $team_name = $conn->real_escape_string($_GET['team_export']);
     header('Content-Type:text/csv; charset=UTF-8');
     header('Content-Disposition:attachment;filename="'.$team_name.'_members.csv"');
     $output = fopen('php://output', 'w');
 
-    // UTF-8 BOM عشان العربي يبان صح
     fprintf($output, "\xEF\xBB\xBF");
-
-    // رؤوس الأعمدة
     fputcsv($output, ['id','name','phone','team','grade','payment','isCase']);
 
-    // البيانات
     $members = $conn->query("SELECT * FROM employees WHERE team='$team_name'");
     while($row = $members->fetch_assoc()) {
-        // نحافظ على id كنص
         $id = "'" . $row['id'];
-        // نحافظ على التليفون كنص
         $phone = "\t" . $row['phone'];
-        // isCase
         $isCase = isset($row['IsCase']) ? $row['IsCase'] : '';
+        fputcsv($output, [$id,$row['name'],$phone,$row['team'],$row['grade'],$row['payment'],$isCase]);
+    }
+    fclose($output);
+    exit();
+}
 
-        fputcsv($output, [
-            $id,
-            $row['name'],
-            $phone,
-            $row['team'],
-            $row['grade'],
-            $row['payment'],
-            $isCase
-        ]);
+// --- تصدير CSV لكل الأعضاء ---
+if (isset($_GET['all_export'])) {
+    header('Content-Type:text/csv; charset=UTF-8');
+    header('Content-Disposition:attachment;filename="all_members.csv"');
+    $output = fopen('php://output', 'w');
+
+    fprintf($output, "\xEF\xBB\xBF");
+    fputcsv($output, ['id','name','phone','team','grade','payment','isCase']);
+
+    $members = $conn->query("SELECT * FROM employees");
+    while($row = $members->fetch_assoc()) {
+        $id = "'" . $row['id'];
+        $phone = "\t" . $row['phone'];
+        $isCase = isset($row['IsCase']) ? $row['IsCase'] : '';
+        fputcsv($output, [$id,$row['name'],$phone,$row['team'],$row['grade'],$row['payment'],$isCase]);
+    }
+    fclose($output);
+    exit();
+}
+
+// --- تصدير CSV حسب اليوم ---
+if (isset($_GET['day_export'])) {
+    $day = $conn->real_escape_string($_GET['day_export']);
+    header('Content-Type:text/csv; charset=UTF-8');
+    header('Content-Disposition:attachment;filename="members_'.$day.'.csv"');
+    $output = fopen('php://output', 'w');
+
+    fprintf($output, "\xEF\xBB\xBF");
+    fputcsv($output, ['id','name','phone','team','grade','payment','isCase']);
+
+    $members = $conn->query("SELECT * FROM employees WHERE DATE(`Timestamp`)='$day'");
+    while($row = $members->fetch_assoc()) {
+        $id = "'" . $row['id'];
+        $phone = "\t" . $row['phone'];
+        $isCase = isset($row['IsCase']) ? $row['IsCase'] : '';
+        fputcsv($output, [$id,$row['name'],$phone,$row['team'],$row['grade'],$row['payment'],$isCase]);
     }
     fclose($output);
     exit();
@@ -236,6 +260,7 @@ body {
         <div class="card total-card">
             <h3>إجمالي الكشافة</h3>
             <p>' . $total_scouts_all . '</p>
+            <a href="dashboard.php?all_export=1" class="export-btn">تحميل الكل</a>
         </div>
         <div class="card total-card">
             <h3>إجمالي المدفوعات</h3>
@@ -269,6 +294,7 @@ foreach ($days_stats as $day) {
             <h3>' . htmlspecialchars($day['day']) . '</h3>
             <p>الأعضاء: ' . $day['members_count'] . '</p>
             <p>المدفوعات: ' . number_format($day['total_payment'], 2) . ' جنيه</p>
+            <a href="dashboard.php?day_export=' . urlencode($day['day']) . '" class="export-btn">تحميل CSV</a>
         </div>';
 }
 $pageContent .= '

@@ -6,33 +6,39 @@ $team = isset($_GET['team']) ? $conn->real_escape_string($_GET['team']) : '';
 if (!$team) die("No team specified.");
 
 // CSV download
+// CSV download
 if (isset($_GET['download_csv'])) {
     header('Content-Type: text/csv; charset=UTF-8');
-    header('Content-Disposition: attachment; filename="team_members.csv"');
-    
+    header('Content-Disposition: attachment;filename="'.$team.'_members.csv"');
+    echo "\xEF\xBB\xBF"; // BOM for UTF-8
+
     $output = fopen('php://output', 'w');
 
-    // CSV header
-    fputcsv($output, ['ID', 'Name', 'Date', 'Payment', 'IsCase']);
+    // Header row
+    fputcsv($output, ['ID', 'NAME', 'DATE', 'PAYMENT', 'IsCase']);
 
-    // Fetch data
-    $sql = "SELECT id, name, DATE(date) as only_date, payment, 
-                   CASE WHEN isCase = 1 THEN 'Yes' ELSE 'No' END as IsCase
-            FROM employees 
-            WHERE team = '$team'";
-    $result = $conn->query($sql);
+    // Get only the required columns
+    $members = $conn->query("
+        SELECT id, name, DATE(date) as only_date, payment, IsCase 
+        FROM employees 
+        WHERE team='$team'
+    ");
 
-    while ($row = $result->fetch_assoc()) {
+    while ($row = $members->fetch_assoc()) {
+        // Format IsCase
+        $isCase = $row['IsCase'] == 1 ? "Yes" : "No";
+
         fputcsv($output, [
             $row['id'],
             $row['name'],
+            $row['only_date'],
             $row['payment'],
-            $row['IsCase']
+            $isCase
         ]);
     }
 
     fclose($output);
-    exit;
+    exit();
 }
 
 // Fetch members for display
@@ -40,7 +46,7 @@ $members = $conn->query("SELECT * FROM employees WHERE team='$team'");
 $res = $conn->query("SHOW COLUMNS FROM employees");
 $cols = [];
 while($c = $res->fetch_assoc()) {
-    if ($c['Field'] != 'scan_count') {
+    if ($c['Field'] != 'scan_count') { // إزالة scan_count
         $cols[] = $c['Field'];
     }
 }
@@ -155,8 +161,6 @@ while($c = $res->fetch_assoc()) {
                             <?php 
                                 if ($col === 'IsCase') {
                                     echo $row[$col] == 1 ? "Yes" : "No";
-                                } elseif ($col === 'phone') {
-                                    echo htmlspecialchars($row[$col]); // Display phone normally in table
                                 } else {
                                     echo htmlspecialchars($row[$col]);
                                 }

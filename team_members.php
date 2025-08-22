@@ -5,45 +5,52 @@ require_once 'db.php';
 $team = isset($_GET['team']) ? $conn->real_escape_string($_GET['team']) : '';
 if (!$team) die("No team specified.");
 
-// --- CSV download ---
+// CSV download
+// CSV download
 if (isset($_GET['download_csv'])) {
+    // UTF-8 with BOM for Arabic support
     header('Content-Type: text/csv; charset=UTF-8');
     header('Content-Disposition: attachment;filename="'.$team.'_members.csv"');
     echo "\xEF\xBB\xBF"; // BOM
 
     $output = fopen('php://output', 'w');
 
-    // Keep only these columns
-    $cols = ['id', 'name', 'Timestamp', 'payment', 'IsCase'];
+    // Header row (only required columns)
+    fputcsv($output, ['ID', 'NAME', 'DATE', 'PAYMENT', 'IsCase']);
 
-    // Header row
-    fputcsv($output, ['#', 'ID', 'Name', 'Date', 'Payment', 'IsCase']);
+    // Get only required columns
+    $members = $conn->query("SELECT id, name, date, payment, IsCase FROM employees WHERE team='$team'");
 
-    $members = $conn->query("SELECT * FROM employees WHERE team='$team'");
-    $counter = 1;
-    while($row = $members->fetch_assoc()) {
-        $data = [];
+    while ($row = $members->fetch_assoc()) {
+        // Format DATE (keep only YYYY-MM-DD)
+        $dateOnly = date("Y-m-d", strtotime($row['date']));
 
-        foreach ($cols as $col) {
-            if ($col === 'IsCase') {
-                $data[] = $row[$col] == 1 ? "Yes" : "No";
-            } elseif ($col === 'Timestamp') {
-                // Show only date part
-                $data[] = date("Y-m-d", strtotime($row[$col]));
-            } else {
-                $data[] = $row[$col];
-            }
-        }
+        // Format IsCase
+        $isCase = $row['IsCase'] == 1 ? "Yes" : "No";
 
-        fputcsv($output, array_merge([$counter++], $data));
+        // Write row to CSV
+        fputcsv($output, [
+            $row['id'],
+            $row['name'],
+            $dateOnly,
+            $row['payment'],
+            $isCase
+        ]);
     }
+
     fclose($output);
     exit();
 }
 
-// --- Fetch for display ---
+// Fetch members for display
 $members = $conn->query("SELECT * FROM employees WHERE team='$team'");
-$cols = ['id', 'name', 'Timestamp', 'payment', 'IsCase'];
+$res = $conn->query("SHOW COLUMNS FROM employees");
+$cols = [];
+while($c = $res->fetch_assoc()) {
+    if ($c['Field'] != 'scan_count') {
+        $cols[] = $c['Field'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -63,6 +70,7 @@ $cols = ['id', 'name', 'Timestamp', 'payment', 'IsCase'];
 
     .main-content {
         margin-right: 220px;
+        /* because sidenav is on the right in RTL */
         padding: 30px;
         flex: 1;
         display: flex;
@@ -99,7 +107,7 @@ $cols = ['id', 'name', 'Timestamp', 'payment', 'IsCase'];
 
     table {
         width: 100%;
-        max-width: 800px;
+        max-width: 1000px;
         border-collapse: collapse;
         background: #fff;
         border-radius: 8px;
@@ -139,11 +147,9 @@ $cols = ['id', 'name', 'Timestamp', 'payment', 'IsCase'];
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>ID</th>
-                    <th>الاسم</th>
-                    <th>التاريخ</th>
-                    <th>الدفع</th>
-                    <th>IsCase</th>
+                    <?php foreach($cols as $col): ?>
+                        <th><?= htmlspecialchars($col) ?></th>
+                    <?php endforeach; ?>
                 </tr>
             </thead>
             <tbody>
@@ -151,11 +157,19 @@ $cols = ['id', 'name', 'Timestamp', 'payment', 'IsCase'];
                 <?php while($row = $members->fetch_assoc()): ?>
                 <tr>
                     <td><?= $counter++ ?></td>
-                    <td><?= htmlspecialchars($row['id']) ?></td>
-                    <td><?= htmlspecialchars($row['name']) ?></td>
-                    <td><?= date("Y-m-d", strtotime($row['Timestamp'])) ?></td>
-                    <td><?= htmlspecialchars($row['payment']) ?></td>
-                    <td><?= $row['IsCase'] == 1 ? "Yes" : "No" ?></td>
+                    <?php foreach($cols as $col): ?>
+                        <td>
+                            <?php 
+                                if ($col === 'IsCase') {
+                                    echo $row[$col] == 1 ? "Yes" : "No";
+                                } elseif ($col === 'phone') {
+                                    echo htmlspecialchars($row[$col]); // Display phone normally in table
+                                } else {
+                                    echo htmlspecialchars($row[$col]);
+                                }
+                            ?>
+                        </td>
+                    <?php endforeach; ?>
                 </tr>
                 <?php endwhile; ?>
             </tbody>

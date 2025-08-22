@@ -2,10 +2,11 @@
 session_start();
 require_once 'db.php';
 
+// --- Team filter from URL ---
 $team = isset($_GET['team']) ? $conn->real_escape_string($_GET['team']) : '';
 if (!$team) die("No team specified.");
 
-// ================== CSV DOWNLOAD ==================
+// --- CSV DOWNLOAD ---
 if (isset($_GET['download_csv'])) {
     $sql = "SELECT id, name, phone, team, grade, payment, IsCase 
             FROM employees 
@@ -13,8 +14,8 @@ if (isset($_GET['download_csv'])) {
     $members = $conn->query($sql);
 
     header('Content-Type: text/csv; charset=UTF-8');
-    header('Content-Disposition: attachment;filename="'.$team.'_members.csv"');
-    echo "\xEF\xBB\xBF"; 
+    header("Content-Disposition: attachment; filename=\"{$team}_members.csv\"");
+    echo "\xEF\xBB\xBF"; // UTF-8 BOM for Excel
 
     $output = fopen('php://output', 'w');
     fputcsv($output, ['ID', 'NAME', 'PHONE', 'TEAM', 'GRADE', 'PAYMENT', 'IsCase']);
@@ -34,9 +35,34 @@ if (isset($_GET['download_csv'])) {
     fclose($output);
     exit;
 }
-// ================== END CSV DOWNLOAD ==================
 
-$members = $conn->query("SELECT * FROM employees WHERE team='$team'");
+// --- Pagination setup ---
+$limit = 50; // show 50 members per page
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$offset = ($page - 1) * $limit;
+
+// --- Count total rows + sum ---
+$count_sql = "SELECT COUNT(*) as total, SUM(payment) as total_payment 
+              FROM employees 
+              WHERE team = '$team'";
+$count_result = $conn->query($count_sql);
+$row_count = $count_result->fetch_assoc();
+$total_rows = $row_count['total'];
+$total_payment = $row_count['total_payment'] ?? 0;
+
+$total_pages = ceil($total_rows / $limit);
+
+// --- Get members with pagination ---
+$sql = "SELECT * FROM employees WHERE team = '$team' ORDER BY id ASC LIMIT $limit OFFSET $offset";
+$result = $conn->query($sql);
+
+// --- Collect members ---
+$members = [];
+while ($row = $result->fetch_assoc()) {
+    $members[] = $row;
+}
+
+// --- Get column names (except scan_count) ---
 $res = $conn->query("SHOW COLUMNS FROM employees");
 $cols = [];
 while ($c = $res->fetch_assoc()) {
@@ -45,48 +71,6 @@ while ($c = $res->fetch_assoc()) {
     }
 }
 
-// ================== PAGE CONTENT ==================
-ob_start(); 
-?>
-    <h1>أعضاء فريق <?= htmlspecialchars($team) ?></h1>
-    <div class="cards">
-        <a href="dashboard.php" class="btn">⬅ رجوع للرئيسية</a>
-        <a href="team_members.php?team=<?= urlencode($team) ?>&download_csv=1" class="btn">📥 تحميل CSV</a>
-    </div>
-
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <?php foreach ($cols as $col): ?>
-                        <th><?= htmlspecialchars($col) ?></th>
-                    <?php endforeach; ?>
-                </tr>
-            </thead>
-            <tbody>
-                <?php $counter = 1; ?>
-                <?php while ($row = $members->fetch_assoc()): ?>
-                <tr>
-                    <td><?= $counter++ ?></td>
-                    <?php foreach ($cols as $col): ?>
-                        <td>
-                            <?php 
-                                if ($col === 'IsCase') {
-                                    echo $row[$col] == 1 ? "Yes" : "No";
-                                } else {
-                                    echo htmlspecialchars($row[$col]);
-                                }
-                            ?>
-                        </td>
-                    <?php endforeach; ?>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
-    </div>
-<?php
-$pageContent = ob_get_clean();
-
-// Import master layout
-include 'layout.php';
+// --- Tell layout which content to load ---
+$pageContent = "team_members_content.php";
+include "layout.php";

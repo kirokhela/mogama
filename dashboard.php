@@ -63,7 +63,7 @@ if (isset($_GET['team_export'])) {
     fclose($output);
     exit();
 }
-
+ /*
 // --- تصدير CSV لكل الأعضاء ---
 if (isset($_GET['all_export'])) {
     header('Content-Type:text/csv; charset=UTF-8');
@@ -83,6 +83,7 @@ if (isset($_GET['all_export'])) {
     fclose($output);
     exit();
 }
+ */
 
 // --- تصدير CSV حسب اليوم ---
 if (isset($_GET['day_export'])) {

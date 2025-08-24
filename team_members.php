@@ -75,6 +75,7 @@ while ($c = $res->fetch_assoc()) {
         text-align: center;
         color: #0f766e;
         font-size: 1.5rem;
+        margin: 0 0 20px 0;
     }
 
     .cards {
@@ -83,6 +84,7 @@ while ($c = $res->fetch_assoc()) {
         margin-bottom: 20px;
         flex-wrap: wrap;
         justify-content: center;
+        width: 100%;
     }
 
     .btn {
@@ -95,6 +97,7 @@ while ($c = $res->fetch_assoc()) {
         text-align: center;
         font-size: 14px;
         min-width: 120px;
+        white-space: nowrap;
     }
 
     .btn:hover {
@@ -103,12 +106,13 @@ while ($c = $res->fetch_assoc()) {
 
     .table-container {
         width: 100%;
-        overflow-x: auto; /* ✅ Scroll on small screens */
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
     }
 
     table {
         width: 100%;
-        min-width: 600px; /* prevent squishing too much */
+        min-width: 600px;
         border-collapse: collapse;
         background: #fff;
         border-radius: 8px;
@@ -123,18 +127,22 @@ while ($c = $res->fetch_assoc()) {
         text-align: center;
         border-bottom: 1px solid #eee;
         font-size: 14px;
+        white-space: nowrap;
     }
 
     table th {
         background: #0f766e;
         color: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 10;
     }
 
     tr:hover {
         background: #f1f1f1;
     }
 
-    /* ✅ Responsive adjustments */
+    /* Mobile First Responsive Design */
     @media (max-width: 768px) {
         body {
             flex-direction: column;
@@ -142,16 +150,121 @@ while ($c = $res->fetch_assoc()) {
 
         .main-content {
             margin-right: 0;
-            padding: 15px;
+            padding: 10px;
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .cards {
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
         }
 
         .btn {
-            flex: 1 1 100%;
+            width: 100%;
+            min-width: auto;
+            padding: 12px 15px;
+            font-size: 14px;
+        }
+
+        .table-container {
+            margin-top: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            min-width: 500px;
+            margin-top: 0;
+            border-radius: 0;
+        }
+
+        table th,
+        table td {
+            padding: 8px 6px;
+            font-size: 12px;
+        }
+
+        table th {
+            font-size: 11px;
+            font-weight: bold;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .main-content {
+            padding: 8px;
+        }
+
+        h1 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+        }
+
+        .btn {
+            padding: 10px 12px;
             font-size: 13px;
+        }
+
+        table {
+            min-width: 450px;
+        }
+
+        table th,
+        table td {
+            padding: 6px 4px;
+            font-size: 11px;
+        }
+
+        table th {
+            font-size: 10px;
+        }
+    }
+
+    /* Very small screens */
+    @media (max-width: 360px) {
+        .main-content {
+            padding: 5px;
+        }
+
+        h1 {
+            font-size: 1rem;
+        }
+
+        table {
+            min-width: 400px;
+        }
+
+        table th,
+        table td {
+            padding: 5px 3px;
+            font-size: 10px;
+        }
+    }
+
+    /* Landscape orientation on mobile */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .main-content {
+            padding: 8px;
         }
 
         h1 {
             font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .cards {
+            flex-direction: row;
+            justify-content: center;
+        }
+
+        .btn {
+            width: auto;
+            min-width: 120px;
         }
     }
     </style>

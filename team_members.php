@@ -150,48 +150,66 @@ while ($c = $res->fetch_assoc()) {
 
         .main-content {
             margin-right: 0;
-            padding: 10px;
+            padding: 8px;
         }
 
         h1 {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            padding: 0 5px;
         }
 
         .cards {
             flex-direction: column;
-            gap: 8px;
-            margin-bottom: 15px;
+            gap: 6px;
+            margin-bottom: 12px;
         }
 
         .btn {
             width: 100%;
             min-width: auto;
-            padding: 12px 15px;
-            font-size: 14px;
+            padding: 10px 12px;
+            font-size: 13px;
         }
 
         .table-container {
-            margin-top: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 8px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
 
         table {
-            min-width: 500px;
+            min-width: 600px;
             margin-top: 0;
             border-radius: 0;
+            font-size: 11px;
         }
 
         table th,
         table td {
-            padding: 8px 6px;
-            font-size: 12px;
+            padding: 6px 4px;
+            font-size: 11px;
+            vertical-align: middle;
         }
 
         table th {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
+            padding: 8px 4px;
+        }
+
+        /* Make specific columns more readable */
+        table td:nth-child(2) { /* ID column */
+            min-width: 30px;
+        }
+        
+        table td:nth-child(6) { /* Name column */
+            min-width: 120px;
+            text-align: right;
+        }
+        
+        table td:nth-child(5) { /* Phone column */
+            min-width: 100px;
         }
     }
 

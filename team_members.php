@@ -44,399 +44,248 @@ while ($c = $res->fetch_assoc()) {
         $cols[] = $c['Field'];
     }
 }
+
+// Capture the page content
+ob_start();
 ?>
-<!DOCTYPE html>
-<html dir="rtl" lang="ar">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أعضاء الفريق - <?= htmlspecialchars($team) ?></title>
-    <style>
-    body {
-        font-family: "Segoe UI", Arial, sans-serif;
-        margin: 0;
-        background: #f4f4f4;
-        color: #333;
-        display: flex;
-        flex-direction: row;
+<style>
+/* Page specific styles */
+.team-header {
+    text-align: center;
+    color: #0f766e;
+    font-size: 1.5rem;
+    margin: 0 0 20px 0;
+}
+
+.action-cards {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+}
+
+.action-btn {
+    display: inline-block;
+    padding: 10px 15px;
+    background: #0f766e;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 14px;
+    min-width: 120px;
+    white-space: nowrap;
+}
+
+.action-btn:hover {
+    background: #0d665b;
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.data-table {
+    width: 100%;
+    min-width: 600px;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.data-table th,
+.data-table td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.data-table th {
+    background: #0f766e;
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.data-table tr:hover {
+    background: #f1f1f1;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .team-header {
+        font-size: 1.2rem;
+        margin-bottom: 12px;
+        padding: 0 5px;
     }
 
-    .main-content {
-        margin-right: 220px;
-        padding: 20px;
-        flex: 1;
-        display: flex;
+    .action-cards {
         flex-direction: column;
-        align-items: center;
+        gap: 6px;
+        margin-bottom: 12px;
     }
 
-    h1 {
-        text-align: center;
-        color: #0f766e;
-        font-size: 1.5rem;
-        margin: 0 0 20px 0;
-    }
-
-    .cards {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-        justify-content: center;
+    .action-btn {
         width: 100%;
-    }
-
-    .btn {
-        display: inline-block;
-        padding: 10px 15px;
-        background: #0f766e;
-        color: #fff;
-        text-decoration: none;
-        border-radius: 6px;
-        text-align: center;
-        font-size: 14px;
-        min-width: 120px;
-        white-space: nowrap;
-    }
-
-    .btn:hover {
-        background: #0d665b;
-    }
-
-    .table-container {
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    table {
-        width: 100%;
-        min-width: 600px;
-        border-collapse: collapse;
-        background: #fff;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        margin-top: 20px;
-    }
-
-    table th,
-    table td {
-        padding: 10px;
-        text-align: center;
-        border-bottom: 1px solid #eee;
-        font-size: 14px;
-        white-space: nowrap;
-    }
-
-    table th {
-        background: #0f766e;
-        color: #fff;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-
-    tr:hover {
-        background: #f1f1f1;
-    }
-
-    /* Hamburger Menu Button */
-    .hamburger {
-        display: none;
-        position: fixed;
-        top: 15px;
-        right: 15px;
-        background: #0f766e;
-        color: #fff;
-        border: none;
+        min-width: auto;
         padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .table-wrapper {
+        margin-top: 8px;
         border-radius: 6px;
-        font-size: 18px;
-        z-index: 1001;
-        cursor: pointer;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
 
-    .hamburger:hover {
-        background: #0d665b;
+    .data-table {
+        min-width: 600px;
+        font-size: 11px;
     }
 
-    /* Mobile Overlay */
-    .mobile-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 999;
+    .data-table th,
+    .data-table td {
+        padding: 6px 4px;
+        font-size: 11px;
+        vertical-align: middle;
+        text-align: center;
     }
 
-    .mobile-overlay.active {
-        display: block;
+    .data-table th {
+        font-size: 10px;
+        font-weight: bold;
+        padding: 8px 4px;
+        text-align: center;
     }
 
-    /* Mobile Responsive Design */
-    @media (max-width: 768px) {
-        body {
-            flex-direction: column;
-        }
+    /* Make specific columns more readable */
+    .data-table td:nth-child(2) { /* ID column */
+        min-width: 30px;
+    }
+    
+    .data-table td:nth-child(5) { /* Phone column */
+        min-width: 100px;
+    }
+}
 
-        /* Show hamburger menu */
-        .hamburger {
-            display: block;
-        }
-
-        /* Adjust main content for mobile */
-        .main-content {
-            margin-right: 0;
-            padding: 60px 8px 8px 8px;
-        }
-
-        h1 {
-            font-size: 1.2rem;
-            margin-bottom: 12px;
-            padding: 0 5px;
-        }
-
-        .cards {
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 12px;
-        }
-
-        .btn {
-            width: 100%;
-            min-width: auto;
-            padding: 10px 12px;
-            font-size: 13px;
-        }
-
-        .table-container {
-            margin-top: 8px;
-            border-radius: 6px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        table {
-            min-width: 600px;
-            margin-top: 0;
-            border-radius: 0;
-            font-size: 11px;
-        }
-
-        table th,
-        table td {
-            padding: 6px 4px;
-            font-size: 11px;
-            vertical-align: middle;
-        }
-
-        table th {
-            font-size: 10px;
-            font-weight: bold;
-            padding: 8px 4px;
-        }
-
-        /* Make specific columns more readable */
-        table td:nth-child(2) { /* ID column */
-            min-width: 30px;
-        }
-        
-        table td:nth-child(6) { /* Name column */
-            min-width: 120px;
-            text-align: right;
-        }
-        
-        table td:nth-child(5) { /* Phone column */
-            min-width: 100px;
-        }
+@media (max-width: 480px) {
+    .team-header {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
     }
 
-    @media (max-width: 480px) {
-        .main-content {
-            padding: 60px 6px 6px 6px;
-        }
-
-        h1 {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-        }
-
-        .btn {
-            padding: 9px 10px;
-            font-size: 12px;
-        }
-
-        table {
-            min-width: 550px;
-        }
-
-        table th,
-        table td {
-            padding: 5px 3px;
-            font-size: 10px;
-        }
-
-        table th {
-            font-size: 9px;
-            padding: 7px 3px;
-        }
-
-        /* Better text alignment for Arabic names */
-        table td:nth-child(6) {
-            text-align: right;
-            padding-right: 8px;
-        }
+    .action-btn {
+        padding: 9px 10px;
+        font-size: 12px;
     }
 
-    /* Very small screens */
-    @media (max-width: 360px) {
-        table {
-            min-width: 500px;
-        }
-
-        table th,
-        table td {
-            padding: 4px 2px;
-            font-size: 9px;
-        }
+    .data-table {
+        min-width: 550px;
     }
 
-    /* Landscape orientation on mobile */
-    @media (max-width: 768px) and (orientation: landscape) {
-        .main-content {
-            padding: 60px 8px 8px 8px;
-        }
-
-        h1 {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-        }
-
-        .cards {
-            flex-direction: row;
-            justify-content: center;
-        }
-
-        .btn {
-            width: auto;
-            min-width: 120px;
-        }
+    .data-table th,
+    .data-table td {
+        padding: 5px 3px;
+        font-size: 10px;
+        text-align: center;
+        vertical-align: middle;
     }
-    </style>
-</head>
 
-<body>
-    <!-- Hamburger Menu Button -->
-    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    .data-table th {
+        font-size: 9px;
+        padding: 7px 3px;
+        text-align: center;
+    }
+}
 
-    <!-- Mobile Overlay -->
-    <div class="mobile-overlay" id="mobileOverlay" onclick="closeSidebar()"></div>
+/* Very small screens */
+@media (max-width: 360px) {
+    .data-table {
+        min-width: 500px;
+    }
 
-    <!-- Include your existing sidebar -->
-    <?php include 'sidenav.php'; ?>
+    .data-table th,
+    .data-table td {
+        padding: 4px 2px;
+        font-size: 9px;
+    }
+}
 
-    <div class="main-content">
-        <h1>أعضاء فريق <?= htmlspecialchars($team) ?></h1>
-        <div class="cards">
-            <a href="dashboard.php" class="btn">⬅ رجوع للرئيسية</a>
-            <a href="team_members.php?team=<?= urlencode($team) ?>&download_csv=1" class="btn">📥 تحميل CSV</a>
-        </div>
+/* Landscape orientation on mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .team-header {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+    }
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <?php foreach ($cols as $col): ?>
-                            <th><?= htmlspecialchars($col) ?></th>
-                        <?php endforeach; ?>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php $counter = 1; ?>
-                    <?php while ($row = $members->fetch_assoc()): ?>
-                    <tr>
-                        <td><?= $counter++ ?></td>
-                        <?php foreach ($cols as $col): ?>
-                            <td>
-                                <?php 
-                                    if ($col === 'IsCase') {
-                                        echo $row[$col] == 1 ? "Yes" : "No";
-                                    } else {
-                                        echo htmlspecialchars($row[$col]);
-                                    }
-                                ?>
-                            </td>
-                        <?php endforeach; ?>
-                    </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
-        </div>
+    .action-cards {
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .action-btn {
+        width: auto;
+        min-width: 120px;
+    }
+}
+</style>
+
+<div class="team-content">
+    <h1 class="team-header">أعضاء فريق <?= htmlspecialchars($team) ?></h1>
+    
+    <div class="action-cards">
+        <a href="dashboard.php" class="action-btn">⬅ رجوع للرئيسية</a>
+        <a href="team_members.php?team=<?= urlencode($team) ?>&download_csv=1" class="action-btn">📥 تحميل CSV</a>
     </div>
 
-    <script>
-    function toggleSidebar() {
-        const sidebar = document.querySelector('.sidebar, .sidenav, nav'); // Find your sidebar element
-        const overlay = document.getElementById('mobileOverlay');
-        
-        if (sidebar) {
-            sidebar.classList.toggle('mobile-active');
-            overlay.classList.toggle('active');
-        }
-    }
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <?php foreach ($cols as $col): ?>
+                        <th><?= htmlspecialchars($col) ?></th>
+                    <?php endforeach; ?>
+                </tr>
+            </thead>
+            <tbody>
+                <?php $counter = 1; ?>
+                <?php while ($row = $members->fetch_assoc()): ?>
+                <tr>
+                    <td><?= $counter++ ?></td>
+                    <?php foreach ($cols as $col): ?>
+                        <td>
+                            <?php 
+                                if ($col === 'IsCase') {
+                                    echo $row[$col] == 1 ? "Yes" : "No";
+                                } else {
+                                    echo htmlspecialchars($row[$col]);
+                                }
+                            ?>
+                        </td>
+                    <?php endforeach; ?>
+                </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
 
-    function closeSidebar() {
-        const sidebar = document.querySelector('.sidebar, .sidenav, nav');
-        const overlay = document.getElementById('mobileOverlay');
-        
-        if (sidebar) {
-            sidebar.classList.remove('mobile-active');
-            overlay.classList.remove('active');
-        }
-    }
+<?php
+// Capture the content
+$pageContent = ob_get_clean();
 
-    // Add mobile styles to existing sidebar
-    document.addEventListener('DOMContentLoaded', function() {
-        const sidebar = document.querySelector('.sidebar, .sidenav, nav');
-        if (sidebar && window.innerWidth <= 768) {
-            // Add mobile transformation styles
-            sidebar.style.transform = 'translateX(100%)';
-            sidebar.style.transition = 'transform 0.3s ease';
-            sidebar.style.zIndex = '1000';
-            
-            // Override for mobile-active class
-            const style = document.createElement('style');
-            style.textContent = `
-                @media (max-width: 768px) {
-                    .sidebar.mobile-active,
-                    .sidenav.mobile-active,
-                    nav.mobile-active {
-                        transform: translateX(0) !important;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-    });
-
-    // Handle window resize
-    window.addEventListener('resize', function() {
-        const sidebar = document.querySelector('.sidebar, .sidenav, nav');
-        const overlay = document.getElementById('mobileOverlay');
-        
-        if (window.innerWidth > 768 && sidebar) {
-            sidebar.style.transform = '';
-            sidebar.classList.remove('mobile-active');
-            overlay.classList.remove('active');
-        }
-    });
-    </script>
-</body>
-
-</html>
+// Include the layout
+include 'layout.php';
+?>

@@ -58,57 +58,17 @@ while ($c = $res->fetch_assoc()) {
         margin: 0;
         background: #f4f4f4;
         color: #333;
-        padding: 0;
+        display: flex;
+        flex-direction: row;
     }
 
-    /* Sidebar Styles */
-    .sidebar {
-        position: fixed;
-        top: 0;
-        right: 0;
-        width: 220px;
-        height: 100vh;
-        background: #1f2937;
-        color: #fff;
-        padding: 20px;
-        box-sizing: border-box;
-        overflow-y: auto;
-        z-index: 1000;
-    }
-
-    .sidebar .logo {
-        text-align: center;
-        margin-bottom: 30px;
-        font-size: 1.2rem;
-        font-weight: bold;
-        color: #10b981;
-    }
-
-    .sidebar .nav-item {
-        display: block;
-        padding: 12px 15px;
-        color: #d1d5db;
-        text-decoration: none;
-        border-radius: 6px;
-        margin-bottom: 5px;
-        transition: all 0.3s;
-    }
-
-    .sidebar .nav-item:hover {
-        background: #374151;
-        color: #fff;
-    }
-
-    .sidebar .nav-item.active {
-        background: #10b981;
-        color: #fff;
-    }
-
-    /* Main Content */
     .main-content {
         margin-right: 220px;
         padding: 20px;
-        min-height: 100vh;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     h1 {
@@ -148,16 +108,17 @@ while ($c = $res->fetch_assoc()) {
         width: 100%;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
     }
 
     table {
         width: 100%;
         min-width: 600px;
         border-collapse: collapse;
-        margin: 0;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        margin-top: 20px;
     }
 
     table th,
@@ -181,8 +142,8 @@ while ($c = $res->fetch_assoc()) {
         background: #f1f1f1;
     }
 
-    /* Mobile Menu Toggle */
-    .mobile-menu-toggle {
+    /* Hamburger Menu Button */
+    .hamburger {
         display: none;
         position: fixed;
         top: 15px;
@@ -190,32 +151,46 @@ while ($c = $res->fetch_assoc()) {
         background: #0f766e;
         color: #fff;
         border: none;
-        padding: 10px;
+        padding: 10px 12px;
         border-radius: 6px;
         font-size: 18px;
         z-index: 1001;
         cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .hamburger:hover {
+        background: #0d665b;
+    }
+
+    /* Mobile Overlay */
+    .mobile-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    .mobile-overlay.active {
+        display: block;
     }
 
     /* Mobile Responsive Design */
     @media (max-width: 768px) {
-        /* Show mobile menu toggle */
-        .mobile-menu-toggle {
+        body {
+            flex-direction: column;
+        }
+
+        /* Show hamburger menu */
+        .hamburger {
             display: block;
         }
 
-        /* Hide sidebar by default on mobile */
-        .sidebar {
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-
-        /* Show sidebar when active */
-        .sidebar.active {
-            transform: translateX(0);
-        }
-
-        /* Adjust main content */
+        /* Adjust main content for mobile */
         .main-content {
             margin-right: 0;
             padding: 60px 8px 8px 8px;
@@ -248,6 +223,8 @@ while ($c = $res->fetch_assoc()) {
 
         table {
             min-width: 600px;
+            margin-top: 0;
+            border-radius: 0;
             font-size: 11px;
         }
 
@@ -354,21 +331,15 @@ while ($c = $res->fetch_assoc()) {
 </head>
 
 <body>
-    <!-- Mobile Menu Toggle -->
-    <button class="mobile-menu-toggle" onclick="toggleSidebar()">☰</button>
+    <!-- Hamburger Menu Button -->
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
 
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="logo">نظام الإدارة</div>
-        <a href="dashboard.php" class="nav-item">🏠 الرئيسية</a>
-        <a href="employees.php" class="nav-item">👥 الموظفين</a>
-        <a href="teams.php" class="nav-item">🏆 الفرق</a>
-        <a href="reports.php" class="nav-item">📊 التقارير</a>
-        <a href="settings.php" class="nav-item">⚙️ الإعدادات</a>
-        <a href="logout.php" class="nav-item">🚪 تسجيل الخروج</a>
-    </div>
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="closeSidebar()"></div>
 
-    <!-- Main Content -->
+    <!-- Include your existing sidebar -->
+    <?php include 'sidenav.php'; ?>
+
     <div class="main-content">
         <h1>أعضاء فريق <?= htmlspecialchars($team) ?></h1>
         <div class="cards">
@@ -411,19 +382,58 @@ while ($c = $res->fetch_assoc()) {
 
     <script>
     function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('active');
+        const sidebar = document.querySelector('.sidebar, .sidenav, nav'); // Find your sidebar element
+        const overlay = document.getElementById('mobileOverlay');
+        
+        if (sidebar) {
+            sidebar.classList.toggle('mobile-active');
+            overlay.classList.toggle('active');
+        }
     }
 
-    // Close sidebar when clicking outside on mobile
-    document.addEventListener('click', function(event) {
-        const sidebar = document.getElementById('sidebar');
-        const toggle = document.querySelector('.mobile-menu-toggle');
+    function closeSidebar() {
+        const sidebar = document.querySelector('.sidebar, .sidenav, nav');
+        const overlay = document.getElementById('mobileOverlay');
         
-        if (window.innerWidth <= 768) {
-            if (!sidebar.contains(event.target) && !toggle.contains(event.target)) {
-                sidebar.classList.remove('active');
-            }
+        if (sidebar) {
+            sidebar.classList.remove('mobile-active');
+            overlay.classList.remove('active');
+        }
+    }
+
+    // Add mobile styles to existing sidebar
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.querySelector('.sidebar, .sidenav, nav');
+        if (sidebar && window.innerWidth <= 768) {
+            // Add mobile transformation styles
+            sidebar.style.transform = 'translateX(100%)';
+            sidebar.style.transition = 'transform 0.3s ease';
+            sidebar.style.zIndex = '1000';
+            
+            // Override for mobile-active class
+            const style = document.createElement('style');
+            style.textContent = `
+                @media (max-width: 768px) {
+                    .sidebar.mobile-active,
+                    .sidenav.mobile-active,
+                    nav.mobile-active {
+                        transform: translateX(0) !important;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        const sidebar = document.querySelector('.sidebar, .sidenav, nav');
+        const overlay = document.getElementById('mobileOverlay');
+        
+        if (window.innerWidth > 768 && sidebar) {
+            sidebar.style.transform = '';
+            sidebar.classList.remove('mobile-active');
+            overlay.classList.remove('active');
         }
     });
     </script>

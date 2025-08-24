@@ -58,17 +58,57 @@ while ($c = $res->fetch_assoc()) {
         margin: 0;
         background: #f4f4f4;
         color: #333;
-        display: flex;
-        flex-direction: row;
+        padding: 0;
     }
 
+    /* Sidebar Styles */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 220px;
+        height: 100vh;
+        background: #1f2937;
+        color: #fff;
+        padding: 20px;
+        box-sizing: border-box;
+        overflow-y: auto;
+        z-index: 1000;
+    }
+
+    .sidebar .logo {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #10b981;
+    }
+
+    .sidebar .nav-item {
+        display: block;
+        padding: 12px 15px;
+        color: #d1d5db;
+        text-decoration: none;
+        border-radius: 6px;
+        margin-bottom: 5px;
+        transition: all 0.3s;
+    }
+
+    .sidebar .nav-item:hover {
+        background: #374151;
+        color: #fff;
+    }
+
+    .sidebar .nav-item.active {
+        background: #10b981;
+        color: #fff;
+    }
+
+    /* Main Content */
     .main-content {
         margin-right: 220px;
         padding: 20px;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+        min-height: 100vh;
     }
 
     h1 {
@@ -107,18 +147,17 @@ while ($c = $res->fetch_assoc()) {
     .table-container {
         width: 100%;
         overflow-x: auto;
-        -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+        -webkit-overflow-scrolling: touch;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
     }
 
     table {
         width: 100%;
         min-width: 600px;
         border-collapse: collapse;
-        background: #fff;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        margin-top: 20px;
+        margin: 0;
     }
 
     table th,
@@ -142,15 +181,44 @@ while ($c = $res->fetch_assoc()) {
         background: #f1f1f1;
     }
 
-    /* Mobile First Responsive Design */
+    /* Mobile Menu Toggle */
+    .mobile-menu-toggle {
+        display: none;
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        background: #0f766e;
+        color: #fff;
+        border: none;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 18px;
+        z-index: 1001;
+        cursor: pointer;
+    }
+
+    /* Mobile Responsive Design */
     @media (max-width: 768px) {
-        body {
-            flex-direction: column;
+        /* Show mobile menu toggle */
+        .mobile-menu-toggle {
+            display: block;
         }
 
+        /* Hide sidebar by default on mobile */
+        .sidebar {
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        /* Show sidebar when active */
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        /* Adjust main content */
         .main-content {
             margin-right: 0;
-            padding: 8px;
+            padding: 60px 8px 8px 8px;
         }
 
         h1 {
@@ -180,8 +248,6 @@ while ($c = $res->fetch_assoc()) {
 
         table {
             min-width: 600px;
-            margin-top: 0;
-            border-radius: 0;
             font-size: 11px;
         }
 
@@ -215,46 +281,21 @@ while ($c = $res->fetch_assoc()) {
 
     @media (max-width: 480px) {
         .main-content {
-            padding: 8px;
+            padding: 60px 6px 6px 6px;
         }
 
         h1 {
             font-size: 1.1rem;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .btn {
-            padding: 10px 12px;
-            font-size: 13px;
+            padding: 9px 10px;
+            font-size: 12px;
         }
 
         table {
-            min-width: 450px;
-        }
-
-        table th,
-        table td {
-            padding: 6px 4px;
-            font-size: 11px;
-        }
-
-        table th {
-            font-size: 10px;
-        }
-    }
-
-    /* Very small screens */
-    @media (max-width: 360px) {
-        .main-content {
-            padding: 5px;
-        }
-
-        h1 {
-            font-size: 1rem;
-        }
-
-        table {
-            min-width: 400px;
+            min-width: 550px;
         }
 
         table th,
@@ -262,12 +303,36 @@ while ($c = $res->fetch_assoc()) {
             padding: 5px 3px;
             font-size: 10px;
         }
+
+        table th {
+            font-size: 9px;
+            padding: 7px 3px;
+        }
+
+        /* Better text alignment for Arabic names */
+        table td:nth-child(6) {
+            text-align: right;
+            padding-right: 8px;
+        }
+    }
+
+    /* Very small screens */
+    @media (max-width: 360px) {
+        table {
+            min-width: 500px;
+        }
+
+        table th,
+        table td {
+            padding: 4px 2px;
+            font-size: 9px;
+        }
     }
 
     /* Landscape orientation on mobile */
     @media (max-width: 768px) and (orientation: landscape) {
         .main-content {
-            padding: 8px;
+            padding: 60px 8px 8px 8px;
         }
 
         h1 {
@@ -289,7 +354,21 @@ while ($c = $res->fetch_assoc()) {
 </head>
 
 <body>
-    <?php include 'sidenav.php'; ?>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">☰</button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo">نظام الإدارة</div>
+        <a href="dashboard.php" class="nav-item">🏠 الرئيسية</a>
+        <a href="employees.php" class="nav-item">👥 الموظفين</a>
+        <a href="teams.php" class="nav-item">🏆 الفرق</a>
+        <a href="reports.php" class="nav-item">📊 التقارير</a>
+        <a href="settings.php" class="nav-item">⚙️ الإعدادات</a>
+        <a href="logout.php" class="nav-item">🚪 تسجيل الخروج</a>
+    </div>
+
+    <!-- Main Content -->
     <div class="main-content">
         <h1>أعضاء فريق <?= htmlspecialchars($team) ?></h1>
         <div class="cards">
@@ -329,6 +408,25 @@ while ($c = $res->fetch_assoc()) {
             </table>
         </div>
     </div>
+
+    <script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('active');
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('sidebar');
+        const toggle = document.querySelector('.mobile-menu-toggle');
+        
+        if (window.innerWidth <= 768) {
+            if (!sidebar.contains(event.target) && !toggle.contains(event.target)) {
+                sidebar.classList.remove('active');
+            }
+        }
+    });
+    </script>
 </body>
 
 </html>

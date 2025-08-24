@@ -36,7 +36,7 @@ ob_start();
 <div class="container">
     <!-- Employees -->
     <div class="table-box">
-        <h3>كل الموظفين</h3>
+        <h3>كل الملتحقين</h3>
         <div class="search-box">
             <input type="text" id="searchEmployees" placeholder="🔍 ابحث...">
         </div>
@@ -223,7 +223,7 @@ async function moveToAttend() {
 
 
 async function removeFromAttend() {
-    if (!selectedAttended) return toast("اختر موظف أولا");
+    if (!selectedAttended) return toast("اختر ملتحق أولا");
     btnRemove.disabled = true;
     let data = await postForm("remove_attendance.php", {
         id: selectedAttended.id

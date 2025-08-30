@@ -9,7 +9,7 @@ $new_date = '2025-08-28';
 $id = '1N6Z';
 
 // Update query (keep time, change only date)
-$sql = "UPDATE your_table_name 
+$sql = "UPDATE employees 
         SET timestamp = CONCAT(?, ' ', TIME(`timestamp`)) 
         WHERE id = ?";
 $stmt = $conn->prepare($sql);

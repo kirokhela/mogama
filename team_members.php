@@ -3,17 +3,18 @@ session_start();
 require_once 'db.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
 $team = isset($_GET['team']) ? $conn->real_escape_string($_GET['team']) : '';
 if (!$team) die("No team specified.");
 
 // Capture filters
 $search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
 $isCaseFilter = isset($_GET['is_case']) ? $_GET['is_case'] : '';
-$orderBy = "days ASC"; // Default sort by days smallest first
+$orderBy = "timestamp ASC"; // ✅ FIXED to sort by timestamp
 
 // ================== CSV DOWNLOAD ==================
 if (isset($_GET['download_csv'])) {
-    $sql = "SELECT id, name, phone, team, grade, payment, IsCase, days 
+    $sql = "SELECT id, name, phone, team, grade, payment, IsCase, timestamp 
             FROM employees 
             WHERE team = '$team'";
 
@@ -33,7 +34,7 @@ if (isset($_GET['download_csv'])) {
     echo "\xEF\xBB\xBF"; 
 
     $output = fopen('php://output', 'w');
-    fputcsv($output, ['ID', 'NAME', 'PHONE', 'TEAM', 'GRADE', 'PAYMENT', 'IsCase', 'DAYS']);
+    fputcsv($output, ['ID', 'NAME', 'PHONE', 'TEAM', 'GRADE', 'PAYMENT', 'IsCase', 'TIMESTAMP']);
 
     while ($row = $members->fetch_assoc()) {
         $isCase = $row['IsCase'] == 1 ? "Yes" : "No";
@@ -45,7 +46,7 @@ if (isset($_GET['download_csv'])) {
             $row['grade'],
             $row['payment'],
             $isCase,
-            $row['days']
+            $row['timestamp']
         ]);
     }
     fclose($output);
@@ -79,7 +80,7 @@ ob_start();
 ?>
 
 <style>
-/* Team Members Page Styles - Inline to ensure they work */
+/* Team Members Page Styles */
 .team-header {
     text-align: center;
     color: #0f766e;
@@ -153,102 +154,19 @@ ob_start();
 
 /* Mobile Responsive Styles */
 @media (max-width: 768px) {
-    .team-header {
-        font-size: 1.2rem;
-        margin-bottom: 12px;
-        padding: 0 5px;
-    }
-    .action-cards {
-        flex-direction: column;
-        gap: 6px;
-        margin-bottom: 12px;
-    }
-    .action-btn {
-        width: 100%;
-        min-width: auto;
-        padding: 10px 12px;
-        font-size: 13px;
-    }
-    .table-wrapper {
-        margin-top: 8px;
-        border-radius: 6px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-    .data-table {
-        min-width: 600px;
-        font-size: 11px;
-    }
-    .data-table th,
-    .data-table td {
-        padding: 6px 4px;
-        font-size: 11px;
-        vertical-align: middle;
-        text-align: center;
-    }
-    .data-table th {
-        font-size: 10px;
-        font-weight: bold;
-        padding: 8px 4px;
-        text-align: center;
-    }
-    .data-table td:nth-child(2) {
-        min-width: 30px;
-    }
-    .data-table td:nth-child(5) {
-        min-width: 100px;
-    }
+    .team-header { font-size: 1.2rem; margin-bottom: 12px; padding: 0 5px; }
+    .action-cards { flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .action-btn { width: 100%; min-width: auto; padding: 10px 12px; font-size: 13px; }
+    .table-wrapper { margin-top: 8px; border-radius: 6px; }
+    .data-table { min-width: 600px; font-size: 11px; }
+    .data-table th, .data-table td { padding: 6px 4px; font-size: 11px; }
 }
 
 @media (max-width: 480px) {
-    .team-header {
-        font-size: 1.1rem;
-        margin-bottom: 10px;
-    }
-    .action-btn {
-        padding: 9px 10px;
-        font-size: 12px;
-    }
-    .data-table {
-        min-width: 550px;
-    }
-    .data-table th,
-    .data-table td {
-        padding: 5px 3px;
-        font-size: 10px;
-        text-align: center;
-        vertical-align: middle;
-    }
-    .data-table th {
-        font-size: 9px;
-        padding: 7px 3px;
-        text-align: center;
-    }
-}
-
-@media (max-width: 360px) {
-    .data-table {
-        min-width: 500px;
-    }
-    .data-table th,
-    .data-table td {
-        padding: 4px 2px;
-        font-size: 9px;
-    }
-}
-
-@media (max-width: 768px) and (orientation: landscape) {
-    .team-header {
-        font-size: 1.2rem;
-        margin-bottom: 10px;
-    }
-    .action-cards {
-        flex-direction: row;
-        justify-content: center;
-    }
-    .action-btn {
-        width: auto;
-        min-width: 120px;
-    }
+    .team-header { font-size: 1.1rem; margin-bottom: 10px; }
+    .action-btn { padding: 9px 10px; font-size: 12px; }
+    .data-table { min-width: 550px; }
+    .data-table th, .data-table td { padding: 5px 3px; font-size: 10px; }
 }
 </style>
 
@@ -292,6 +210,8 @@ ob_start();
                             <?php 
                                 if ($col === 'IsCase') {
                                     echo $row[$col] == 1 ? "Yes" : "No";
+                                } elseif ($col === 'timestamp') {
+                                    echo date("Y-m-d H:i:s", strtotime($row[$col]));
                                 } else {
                                     echo htmlspecialchars($row[$col]);
                                 }

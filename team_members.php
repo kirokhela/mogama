@@ -5,11 +5,26 @@ require_once 'db.php';
 $team = isset($_GET['team']) ? $conn->real_escape_string($_GET['team']) : '';
 if (!$team) die("No team specified.");
 
+// Capture filters
+$search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
+$isCaseFilter = isset($_GET['is_case']) ? $_GET['is_case'] : '';
+$orderBy = "days ASC"; // Default sort by days smallest first
+
 // ================== CSV DOWNLOAD ==================
 if (isset($_GET['download_csv'])) {
-    $sql = "SELECT id, name, phone ,team ,grade, payment, IsCase 
+    $sql = "SELECT id, name, phone, team, grade, payment, IsCase, days 
             FROM employees 
             WHERE team = '$team'";
+
+    if (!empty($search)) {
+        $sql .= " AND (id LIKE '%$search%' OR name LIKE '%$search%')";
+    }
+    if ($isCaseFilter !== '') {
+        $isCaseValue = $isCaseFilter == '1' ? 1 : 0;
+        $sql .= " AND IsCase = '$isCaseValue'";
+    }
+    $sql .= " ORDER BY $orderBy";
+
     $members = $conn->query($sql);
 
     header('Content-Type: text/csv; charset=UTF-8');
@@ -17,7 +32,7 @@ if (isset($_GET['download_csv'])) {
     echo "\xEF\xBB\xBF"; 
 
     $output = fopen('php://output', 'w');
-    fputcsv($output, ['ID', 'NAME', 'PHONE','TEAM ','GRADE', 'PAYMENT', 'IsCase']);
+    fputcsv($output, ['ID', 'NAME', 'PHONE', 'TEAM', 'GRADE', 'PAYMENT', 'IsCase', 'DAYS']);
 
     while ($row = $members->fetch_assoc()) {
         $isCase = $row['IsCase'] == 1 ? "Yes" : "No";
@@ -28,7 +43,8 @@ if (isset($_GET['download_csv'])) {
             $row['team'],
             $row['grade'],
             $row['payment'],
-            $isCase
+            $isCase,
+            $row['days']
         ]);
     }
     fclose($output);
@@ -36,7 +52,19 @@ if (isset($_GET['download_csv'])) {
 }
 // ================== END CSV DOWNLOAD ==================
 
-$members = $conn->query("SELECT * FROM employees WHERE team='$team'");
+// Build main query
+$query = "SELECT * FROM employees WHERE team='$team'";
+if (!empty($search)) {
+    $query .= " AND (id LIKE '%$search%' OR name LIKE '%$search%')";
+}
+if ($isCaseFilter !== '') {
+    $isCaseValue = $isCaseFilter == '1' ? 1 : 0;
+    $query .= " AND IsCase = '$isCaseValue'";
+}
+$query .= " ORDER BY $orderBy";
+$members = $conn->query($query);
+
+// Get table columns
 $res = $conn->query("SHOW COLUMNS FROM employees");
 $cols = [];
 while ($c = $res->fetch_assoc()) {
@@ -45,11 +73,9 @@ while ($c = $res->fetch_assoc()) {
     }
 }
 
-// Capture the page content
+// Capture page content
 ob_start();
 ?>
-
-
 
 <style>
 /* Team Members Page Styles - Inline to ensure they work */
@@ -131,31 +157,26 @@ ob_start();
         margin-bottom: 12px;
         padding: 0 5px;
     }
-
     .action-cards {
         flex-direction: column;
         gap: 6px;
         margin-bottom: 12px;
     }
-
     .action-btn {
         width: 100%;
         min-width: auto;
         padding: 10px 12px;
         font-size: 13px;
     }
-
     .table-wrapper {
         margin-top: 8px;
         border-radius: 6px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
-
     .data-table {
         min-width: 600px;
         font-size: 11px;
     }
-
     .data-table th,
     .data-table td {
         padding: 6px 4px;
@@ -163,18 +184,15 @@ ob_start();
         vertical-align: middle;
         text-align: center;
     }
-
     .data-table th {
         font-size: 10px;
         font-weight: bold;
         padding: 8px 4px;
         text-align: center;
     }
-
     .data-table td:nth-child(2) {
         min-width: 30px;
     }
-    
     .data-table td:nth-child(5) {
         min-width: 100px;
     }
@@ -185,16 +203,13 @@ ob_start();
         font-size: 1.1rem;
         margin-bottom: 10px;
     }
-
     .action-btn {
         padding: 9px 10px;
         font-size: 12px;
     }
-
     .data-table {
         min-width: 550px;
     }
-
     .data-table th,
     .data-table td {
         padding: 5px 3px;
@@ -202,7 +217,6 @@ ob_start();
         text-align: center;
         vertical-align: middle;
     }
-
     .data-table th {
         font-size: 9px;
         padding: 7px 3px;
@@ -214,7 +228,6 @@ ob_start();
     .data-table {
         min-width: 500px;
     }
-
     .data-table th,
     .data-table td {
         padding: 4px 2px;
@@ -227,12 +240,10 @@ ob_start();
         font-size: 1.2rem;
         margin-bottom: 10px;
     }
-
     .action-cards {
         flex-direction: row;
         justify-content: center;
     }
-
     .action-btn {
         width: auto;
         min-width: 120px;
@@ -245,8 +256,20 @@ ob_start();
     
     <div class="action-cards">
         <a href="dashboard.php" class="action-btn">⬅ رجوع للرئيسية</a>
-        <a href="team_members.php?team=<?= urlencode($team) ?>&download_csv=1" class="action-btn">📥 تحميل CSV</a>
+        <a href="team_members.php?team=<?= urlencode($team) ?>&download_csv=1&search=<?= urlencode($search) ?>&is_case=<?= urlencode($isCaseFilter) ?>" class="action-btn">📥 تحميل CSV</a>
     </div>
+
+    <!-- Search and Filter -->
+    <form method="get" style="margin-bottom:20px; text-align:center;">
+        <input type="hidden" name="team" value="<?= htmlspecialchars($team) ?>">
+        <input type="text" name="search" placeholder="بحث بالاسم أو ID" value="<?= htmlspecialchars($search) ?>" style="padding:5px; width:200px;">
+        <select name="is_case" style="padding:5px;">
+            <option value="">الكل</option>
+            <option value="1" <?= $isCaseFilter==='1'?'selected':'' ?>>Case</option>
+            <option value="0" <?= $isCaseFilter==='0'?'selected':'' ?>>Not Case</option>
+        </select>
+        <button type="submit" class="action-btn" style="padding:5px 15px;">بحث</button>
+    </form>
 
     <div class="table-wrapper">
         <table class="data-table">
@@ -282,9 +305,6 @@ ob_start();
 </div>
 
 <?php
-// Capture the content
 $pageContent = ob_get_clean();
-
-// Include the layout
 include 'layout.php';
 ?>

@@ -29,8 +29,8 @@ $days_query = $conn->query("
     SELECT DATE(`Timestamp`) as day, COUNT(*) as members_count, SUM(payment) as total_payment
     FROM employees
     GROUP BY day
-    ORDER BY day DESC
-");
+    ORDER BY day DESC"
+);
 while ($row = $days_query->fetch_assoc()) {
     $days_stats[] = $row;
 }

@@ -30,7 +30,6 @@ $days_query = $conn->query("
     FROM employees
     GROUP BY day
     ORDER BY day DESC
-    LIMIT 7
 ");
 while ($row = $days_query->fetch_assoc()) {
     $days_stats[] = $row;

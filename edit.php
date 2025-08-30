@@ -1,6 +1,6 @@
 <?php
 require_once 'includes/auth.php';
-require_admin();
+require_admin();            // block non-admins
 require_once 'db.php';
 
 $id = $_GET['id'] ?? '';
@@ -9,7 +9,7 @@ if (!$id) {
     exit;
 }
 
-// Handle form submit
+// On POST -> update
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name       = trim($_POST['name'] ?? '');
     $phone      = trim($_POST['phone'] ?? '');
@@ -17,24 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $grade      = trim($_POST['grade'] ?? '');
     $payment    = trim($_POST['payment'] ?? '');
     $isCase     = isset($_POST['isCase']) ? 1 : 0;
-    $new_date   = trim($_POST['date_only'] ?? '');
 
-    // Keep old time, only change date
-    $stmt = $conn->prepare("SELECT timestamp FROM employees WHERE id=? LIMIT 1");
-    $stmt->bind_param("s", $id);
-    $stmt->execute();
-    $res = $stmt->get_result();
-    $row_old = $res->fetch_assoc();
-    $stmt->close();
-
-    $old_time = date('H:i:s', strtotime($row_old['timestamp']));
-    $new_timestamp = $new_date . ' ' . $old_time;
-
-    // Update
     $stmt = $conn->prepare("UPDATE employees 
-        SET name=?, phone=?, team=?, grade=?, payment=?, IsCase=?, timestamp=? 
+        SET name=?, phone=?, team=?, grade=?, payment=?, IsCase=? 
         WHERE id=?");
-    $stmt->bind_param("ssssssis", $name, $phone, $team, $grade, $payment, $isCase, $new_timestamp, $id);
+    $stmt->bind_param("sssssis", $name, $phone, $team, $grade, $payment, $isCase, $id);
 
     if ($stmt->execute()) {
         $stmt->close();
@@ -46,8 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Fetch employee
-$stmt = $conn->prepare("SELECT id, name, phone, team, grade, payment, IsCase, timestamp 
+// fetch existing row
+$stmt = $conn->prepare("SELECT id, name, phone, team, grade, payment, IsCase 
                         FROM employees WHERE id=? LIMIT 1");
 $stmt->bind_param("s", $id);
 $stmt->execute();
@@ -59,8 +46,6 @@ if ($res->num_rows === 0) {
 }
 $row = $res->fetch_assoc();
 $stmt->close();
-
-$current_date = date('Y-m-d', strtotime($row['timestamp']));
 ?>
 <!doctype html>
 <html lang="ar" dir="rtl">
@@ -166,13 +151,12 @@ a.cancel:hover {
     </select>
     
     <label>المرحلة</label>
-    <select id="grade" name="grade" required></select>
+    <select id="grade" name="grade" required>
+        <!-- options will be filled dynamically -->
+    </select>
     
     <label>المبلغ</label>
     <input name="payment" value="<?php echo htmlspecialchars($row['payment']); ?>" required>
-    
-    <label>تاريخ التسجيل</label>
-    <input type="date" name="date_only" value="<?php echo $current_date; ?>" required>
     
     <label>
       <input type="checkbox" name="isCase" value="1" <?php echo $row['IsCase'] ? 'checked' : ''; ?>>
@@ -246,7 +230,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     teamSelect.addEventListener("change", updateGrades);
-    updateGrades();
+    updateGrades(); // initialize on load
 });
 </script>
 </body>

@@ -83,6 +83,58 @@ $pageContent = '
         margin: 0 auto 10px auto;
     }
 
+    /* Payment buttons styles */
+    .payment-buttons {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .payment-btn {
+        padding: 10px 15px;
+        border: 2px solid #e1e8ed;
+        border-radius: 8px;
+        background: white;
+        color: #333;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .payment-btn:hover {
+        border-color: #3498db;
+        background-color: #f8f9fa;
+    }
+
+    .payment-btn.active {
+        border-color: #3498db;
+        background-color: #3498db;
+        color: white;
+    }
+
+    .custom-payment {
+        display: none;
+        margin-top: 10px;
+    }
+
+    .custom-payment input {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #e1e8ed;
+        border-radius: 8px;
+        font-size: 15px;
+        color: #333;
+    }
+
+    .custom-payment input:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        outline: none;
+    }
+
     @media (max-width: 600px) {
         .main {
             margin: 20px auto;
@@ -91,6 +143,10 @@ $pageContent = '
 
         .main h1 {
             font-size: 24px;
+        }
+
+        .payment-buttons {
+            grid-template-columns: repeat(2, 1fr);
         }
     }
 </style>
@@ -138,7 +194,18 @@ $pageContent = '
         </div>
         <div class="nice-form-group">
             <label>المبلغ المدفوع</label>
-            <input type="text" id="payment" name="payment" placeholder="ادخل المبلغ المدفوع" required />
+            <div class="payment-buttons">
+                <button type="button" class="payment-btn" data-value="0">0 جنيه</button>
+                <button type="button" class="payment-btn" data-value="50">50 جنيه</button>
+                <button type="button" class="payment-btn" data-value="100">100 جنيه</button>
+                <button type="button" class="payment-btn" data-value="150">150 جنيه</button>
+                <button type="button" class="payment-btn" data-value="250">250 جنيه</button>
+                <button type="button" class="payment-btn" id="customBtn" data-value="custom">أخرى</button>
+            </div>
+            <div class="custom-payment" id="customPayment">
+                <input type="text" id="customAmount" placeholder="ادخل المبلغ" />
+            </div>
+            <input type="hidden" name="payment" id="paymentValue" required />
         </div>
         <input type="submit" value="إرسال">
     </form>
@@ -200,6 +267,42 @@ document.getElementById("team").addEventListener("change", function() {
         option.textContent = grade.text;
         gradeSelect.appendChild(option);
     });
+});
+
+// Payment buttons functionality
+const paymentButtons = document.querySelectorAll(".payment-btn");
+const customPayment = document.getElementById("customPayment");
+const customAmount = document.getElementById("customAmount");
+const paymentValue = document.getElementById("paymentValue");
+const customBtn = document.getElementById("customBtn");
+
+paymentButtons.forEach(button => {
+    button.addEventListener("click", function() {
+        // Remove active class from all buttons
+        paymentButtons.forEach(btn => btn.classList.remove("active"));
+        
+        // Add active class to clicked button
+        this.classList.add("active");
+        
+        const value = this.getAttribute("data-value");
+        
+        if (value === "custom") {
+            // Show custom input
+            customPayment.style.display = "block";
+            paymentValue.value = "";
+            customAmount.focus();
+        } else {
+            // Hide custom input and set value
+            customPayment.style.display = "none";
+            paymentValue.value = value;
+            customAmount.value = "";
+        }
+    });
+});
+
+// Handle custom amount input
+customAmount.addEventListener("input", function() {
+    paymentValue.value = this.value;
 });
 
 document.getElementById("isCase").addEventListener("change", function() {

@@ -1,6 +1,7 @@
 <?php
 require_once 'db.php'; // Your database connection file
-
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 // New date you want to set
 $new_date = '2025-08-28';
 
@@ -23,3 +24,5 @@ if ($stmt->execute()) {
 $stmt->close();
 $conn->close();
 ?>
+
+

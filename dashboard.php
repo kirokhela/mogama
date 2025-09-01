@@ -117,6 +117,16 @@ body {
     direction: rtl;
 }
 
+.blurred {
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+    cursor: pointer;
+}
+
+.blurred:hover {
+    filter: blur(0);
+}
+    
 /* Container */
 .dashboard-container {
     padding: 40px 20px;
@@ -265,7 +275,8 @@ body {
             </div>
         <div class="card total-card">
             <h3>إجمالي المدفوعات</h3>
-            <p>' . number_format($total_payment_all, 2) . ' جنيه</p>
+         <p><span class="blurred">' . number_format($total_payment_all, 2) . ' جنيه</span></p>
+
         </div>
     </div>
 
@@ -294,7 +305,7 @@ foreach ($days_stats as $day) {
         <div class="card day-card">
             <h3>' . htmlspecialchars($day['day']) . '</h3>
             <p>الأعضاء: ' . $day['members_count'] . '</p>
-            <p>المدفوعات: ' . number_format($day['total_payment'], 2) . ' جنيه</p>
+            <p><span class="blurred">المدفوعات: ' . number_format($day['total_payment'], 2) . ' جنيه</p>
             <a href="dashboard.php?day_export=' . urlencode($day['day']) . '" class="export-btn">تحميل CSV</a>
         </div>';
 }

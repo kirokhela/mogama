@@ -179,6 +179,7 @@ $pageContent = '
                 <option value="متقدم">متقدم</option>
                 <option value="رائدات">رائدات</option>
                 <option value="جوالة">جوالة</option>
+                <option value="أهالي">أهالي</option>
             </select>
         </div>
         <div class="nice-form-group">

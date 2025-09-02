@@ -281,12 +281,30 @@
             <button class="btn btn-attend" onclick="markAttendance()" id="attendBtn">
                 <span class="icon">✅</span>Mark Attendance
             </button>
+
+               <button class="btn btn-attend" onclick="removeFromAttend()" id="attendBtn">
+                <span class="icon">❌</span>Remove Attendance
+            </button>
+
+     
         </div>
     </div>
 
     <script>
         let qrData = "";
         let employeeData = null;
+
+
+        async function removeFromAttend() {
+    if (!selectedAttended) return toast("اختر ملتحق أولا");
+    btnRemove.disabled = true;
+    let data = await postForm("remove_attendance.php", {
+        id: selectedAttended.id
+    });
+    toast(data.message);
+    if (data.success) location.reload();
+}
+
 
         function getQRData() {
             const urlParams = new URLSearchParams(window.location.search);

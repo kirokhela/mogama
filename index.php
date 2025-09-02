@@ -260,6 +260,11 @@ document.getElementById("team").addEventListener("change", function() {
                 {value: "خريج", text: "خريج"}
             ];
             break;
+        case "أهالي":
+            grades = [
+                {value: "أهالي", text: "أهالي"},
+            ];
+            break;    
     }
 
     grades.forEach(grade => {

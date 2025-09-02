@@ -294,11 +294,11 @@
         let employeeData = null;
 
 
-        async function removeFromAttend() {
+async function removeFromAttend() {
     if (!selectedAttended) return toast("اختر ملتحق أولا");
     btnRemove.disabled = true;
     let data = await postForm("remove_attendance.php", {
-        id: selectedAttended.id
+        id: employeeData.id
     });
     toast(data.message);
     if (data.success) location.reload();

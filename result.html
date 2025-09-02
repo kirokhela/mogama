@@ -275,18 +275,66 @@
             <button class="btn btn-secondary" onclick="goBack()">
                 <span class="icon">📷</span>Scan Another
             </button>
-            <button class="btn btn-success" onclick="openLink()" id="openLinkBtn" style="display: none;">
-                <span class="icon">🔗</span>Open Link
-            </button>
-            <button class="btn btn-attend" onclick="markAttendance()" id="attendBtn">
+            
+                <button class="btn btn-attend" onclick="markAttendance()" id="attendBtn">
                 <span class="icon">✅</span>Mark Attendance
             </button>
+
+            <button class="" onclick="removeFromAttend()" id="removeBtn">
+                <span class="icon">❌</span>Remove Attendance
+            </button>
+
+
+     
         </div>
     </div>
 
     <script>
         let qrData = "";
         let employeeData = null;
+
+
+      function removeFromAttend() {
+    if (!employeeData) {
+        showAlert("لا يوجد بيانات موظف لحذف الحضور!", "danger");
+        return;
+    }
+
+    const removeBtn = document.getElementById("removeBtn");
+    removeBtn.disabled = true;
+    removeBtn.innerHTML = "<span class='icon'>⏳</span>Processing...";
+
+    fetch("remove_attendance.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify({ id: employeeData.id })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showAlert(data.message || "تمت إزالة الحضور بنجاح!", "success");
+            removeBtn.innerHTML = "<span class='icon'>❌</span>Removed";
+            removeBtn.style.background = "linear-gradient(135deg, #dc3545, #b21f2d)";
+        } else {
+            showAlert(data.message || "فشل في إزالة الحضور", "danger");
+            removeBtn.disabled = false;
+            removeBtn.innerHTML = "<span class='icon'>❌</span>Remove Attendance";
+        }
+    })
+    .catch(error => {
+        showAlert(`Network error: ${error.message}`, "danger");
+        removeBtn.disabled = false;
+        removeBtn.innerHTML = "<span class='icon'>❌</span>Remove Attendance";
+    });
+}
+
+
 
         function getQRData() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -421,10 +469,10 @@
                 const infoGrid = document.getElementById("infoGrid");
                 
                 const fields = [
-                    { label: "Employee ID", value: employeeData.id, icon: "🆔" },
+                    { label: "ID", value: employeeData.id, icon: "🆔" },
                     { label: "Full Name", value: employeeData.name, icon: "👤" },
                     { label: "Payment Amount", value: employeeData.payment, icon: "💰" },
-                    { label: "Team/Department", value: employeeData.team, icon: "🏢" }
+                    { label: "Team", value: employeeData.team, icon: "🏢" }
                 ];
                 
                 infoGrid.innerHTML = fields.map(field => `

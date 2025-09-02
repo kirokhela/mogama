@@ -1,7 +1,15 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
-// It's better to restrict this to your actual domain in production instead of '*'
+// In production, replace '*' with your actual domain
 header('Access-Control-Allow-Origin: *'); 
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Accept');
+
+// Handle preflight (CORS) requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 // --- Database Connection ---
 $servername = "193.203.168.53";
@@ -11,23 +19,25 @@ $dbname     = "u968010081_mogamaa";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
-    // It's good practice to stop the script if the connection fails
-    http_response_code(500 ); // Internal Server Error
+    http_response_code(500);
     echo json_encode(["success" => false, "message" => "Database connection failed."]);
     exit;
 }
 $conn->set_charset("utf8mb4");
 
-// --- Validate Input ---
+// --- Validate Request Method ---
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405 ); // Method Not Allowed
+    http_response_code(405);
     echo json_encode(["success" => false, "message" => "Invalid request method."]);
     exit;
 }
 
-$id = $_POST['id'] ?? null;
+// --- Read Input (Support JSON + Form Data) ---
+$input = json_decode(file_get_contents("php://input"), true);
+$id = $input['id'] ?? ($_POST['id'] ?? null);
+
 if (!$id) {
-    http_response_code(400 ); // Bad Request
+    http_response_code(400);
     echo json_encode(["success" => false, "message" => "Employee ID is required."]);
     exit;
 }
@@ -36,33 +46,39 @@ if (!$id) {
 $conn->begin_transaction();
 
 try {
-    // 1. Delete the record from the Attended_employee table
+    // 1. Delete from Attended_employee
     $stmt_delete = $conn->prepare("DELETE FROM Attended_employee WHERE id = ?");
+    if (!$stmt_delete) {
+        throw new mysqli_sql_exception("Prepare failed: " . $conn->error);
+    }
     $stmt_delete->bind_param("s", $id);
     $stmt_delete->execute();
     $stmt_delete->close();
 
-    // 2. Update the scan_count in the employees table back to 0
+    // 2. Reset scan_count in employees table
     $stmt_update = $conn->prepare("UPDATE employees SET scan_count = 0 WHERE id = ?");
+    if (!$stmt_update) {
+        throw new mysqli_sql_exception("Prepare failed: " . $conn->error);
+    }
     $stmt_update->bind_param("s", $id);
     $stmt_update->execute();
     $stmt_update->close();
 
-    // If both queries were successful, commit the transaction
+    // Commit changes
     $conn->commit();
 
     echo json_encode(["success" => true, "message" => "تمت إزالة الحضور بنجاح"]);
 
 } catch (mysqli_sql_exception $exception) {
-    // If any query fails, roll back the entire transaction
+    // Rollback on error
     $conn->rollback();
-    
-    // For debugging, you can log the error instead of showing it to the user
-    // error_log("Remove attendance failed: " . $exception->getMessage());
-    
-    http_response_code(500 ); // Internal Server Error
-    echo json_encode(["success" => false, "message" => "حدث خطأ في قاعدة البيانات. يرجى المحاولة مرة أخرى."]);
+
+    http_response_code(500);
+    echo json_encode([
+        "success" => false,
+        "message" => "حدث خطأ في قاعدة البيانات. يرجى المحاولة مرة أخرى.",
+        "error"   => $exception->getMessage() // ⚠️ Optional: remove in production
+    ]);
 }
 
-$conn->close();
-?>
+$conn->close();?>

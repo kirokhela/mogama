@@ -127,6 +127,8 @@ tr:hover {
     background: #f1f5f9;
 }
 
+
+
 tfoot td {
     font-weight: bold;
     background: #0f766e;
@@ -140,6 +142,23 @@ tfoot td {
     gap: 5px;
     justify-content: center;
     flex-wrap: wrap;
+}
+
+
+.blur {
+    filter: blur(4px);
+    display: inline-block;
+    cursor: pointer;
+    user-select: none;
+    /* disable text selection */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.blur:hover {
+    filter: none;
+    /* remove blur on hover */
 }
 
 .action-links a {
@@ -259,6 +278,10 @@ tfoot td {
     color: #fff;
     border-color: #007bff;
 }
+
+.phone-cell {
+    white-space: nowrap;
+}
 </style>
 
 <div class="page-title">تفاصيل الملتحقين</div>
@@ -331,7 +354,11 @@ tfoot td {
                     <td><?php echo $i + 1; ?></td>
                     <td><?php echo htmlspecialchars($row["id"]); ?></td>
                     <td><?php echo htmlspecialchars($row["name"]); ?></td>
-                    <td><?php echo htmlspecialchars($row["phone"]); ?></td>
+                    <td class="phone-cell">
+                        <span class="blur"><?php echo htmlspecialchars($row["phone"]); ?></span>
+                    </td>
+
+
                     <td><?php echo htmlspecialchars($row["team"]); ?></td>
                     <td><?php echo htmlspecialchars($row["grade"]); ?></td>
                     <td><?php echo number_format($row["payment"], 2); ?></td>

@@ -149,6 +149,11 @@ tfoot td {
     filter: blur(4px);
     display: inline-block;
     cursor: pointer;
+    user-select: none;
+    /* disable text selection */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .blur:hover {

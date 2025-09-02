@@ -294,15 +294,46 @@
         let employeeData = null;
 
 
-async function removeFromAttend() {
-    if (!selectedAttended) return toast("اختر ملتحق أولا");
-    btnRemove.disabled = true;
-    let data = await postForm("remove_attendance.php", {
-        id: employeeData.id
+      function removeFromAttend() {
+    if (!employeeData) {
+        showAlert("لا يوجد بيانات موظف لحذف الحضور!", "danger");
+        return;
+    }
+
+    const removeBtn = document.getElementById("removeBtn");
+    removeBtn.disabled = true;
+    removeBtn.innerHTML = "<span class='icon'>⏳</span>Processing...";
+
+    fetch("remove_attendance.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify({ id: employeeData.id })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showAlert(data.message || "تمت إزالة الحضور بنجاح!", "success");
+            removeBtn.innerHTML = "<span class='icon'>❌</span>Removed";
+            removeBtn.style.background = "linear-gradient(135deg, #dc3545, #b21f2d)";
+        } else {
+            showAlert(data.message || "فشل في إزالة الحضور", "danger");
+            removeBtn.disabled = false;
+            removeBtn.innerHTML = "<span class='icon'>❌</span>Remove Attendance";
+        }
+    })
+    .catch(error => {
+        showAlert(`Network error: ${error.message}`, "danger");
+        removeBtn.disabled = false;
+        removeBtn.innerHTML = "<span class='icon'>❌</span>Remove Attendance";
     });
-    toast(data.message);
-    if (data.success) location.reload();
 }
+
 
 
         function getQRData() {

@@ -50,30 +50,36 @@ ob_start();
         <div class="search-box">
             <input type="text" id="searchEmployees" placeholder="🔍 ابحث...">
         </div>
-        <table id="employeesTable">
-            <thead>
-                <tr>
-                    <th>الكود</th>
-                    <th>الاسم</th>
-                    <th>الفريق</th>
-                    <th>المبلغ</th>
-                    <th>وقت الحجز</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($employees as $emp): ?>
-                <tr data-id="<?= $emp['id'] ?>" data-name="<?= htmlspecialchars($emp['name']) ?>"
-                    data-team="<?= htmlspecialchars($emp['team']) ?>"
-                    data-payment="<?= htmlspecialchars($emp['payment']) ?>">
-                    <td><?= $emp['id'] ?></td>
-                    <td><?= htmlspecialchars($emp['name']) ?></td>
-                    <td><?= htmlspecialchars($emp['team']) ?></td>
-                    <td><?= htmlspecialchars($emp['payment']) ?></td>
-                    <td><?= htmlspecialchars($emp['Timestamp']) ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table id="employeesTable">
+                <thead>
+                    <tr>
+                        <th>الكود</th>
+                        <th>الاسم</th>
+                        <th>الفريق</th>
+                        <th>المبلغ</th>
+                        <th>وقت الحجز</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($employees as $emp): ?>
+                    <tr data-id="<?= $emp['id'] ?>" data-name="<?= htmlspecialchars($emp['name']) ?>"
+                        data-team="<?= htmlspecialchars($emp['team']) ?>"
+                        data-payment="<?= htmlspecialchars($emp['payment']) ?>">
+                        <td><?= $emp['id'] ?></td>
+                        <td><?= htmlspecialchars($emp['name']) ?></td>
+                        <td><?= htmlspecialchars($emp['team']) ?></td>
+                        <td><?= htmlspecialchars($emp['payment']) ?></td>
+                        <td><?= htmlspecialchars($emp['Timestamp']) ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination-container">
+            <div class="pagination" id="employeesPagination"></div>
+            <div class="pagination-info" id="employeesInfo"></div>
+        </div>
     </div>
 
     <!-- Attended -->
@@ -82,28 +88,34 @@ ob_start();
         <div class="search-box">
             <input type="text" id="searchAttended" placeholder="🔍 ابحث...">
         </div>
-        <table id="attendedTable">
-            <thead>
-                <tr>
-                    <th>الكود</th>
-                    <th>الاسم</th>
-                    <th>الفريق</th>
-                    <th>المبلغ</th>
-                    <th>وقت الحضور</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($attended as $att): ?>
-                <tr data-id="<?= $att['id'] ?>" data-name="<?= htmlspecialchars($att['name']) ?>">
-                    <td><?= $att['id'] ?></td>
-                    <td><?= htmlspecialchars($att['name']) ?></td>
-                    <td><?= htmlspecialchars($att['team']) ?></td>
-                    <td><?= htmlspecialchars($att['payment_amount']) ?></td>
-                    <td><?= $att['attendance_time'] ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table id="attendedTable">
+                <thead>
+                    <tr>
+                        <th>الكود</th>
+                        <th>الاسم</th>
+                        <th>الفريق</th>
+                        <th>المبلغ</th>
+                        <th>وقت الحضور</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($attended as $att): ?>
+                    <tr data-id="<?= $att['id'] ?>" data-name="<?= htmlspecialchars($att['name']) ?>">
+                        <td><?= $att['id'] ?></td>
+                        <td><?= htmlspecialchars($att['name']) ?></td>
+                        <td><?= htmlspecialchars($att['team']) ?></td>
+                        <td><?= htmlspecialchars($att['payment_amount']) ?></td>
+                        <td><?= $att['attendance_time'] ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination-container">
+            <div class="pagination" id="attendedPagination"></div>
+            <div class="pagination-info" id="attendedInfo"></div>
+        </div>
     </div>
 </div>
 
@@ -123,6 +135,161 @@ let selectedAttended = null;
 let lastUpdateTimestamp = <?= $last_update ?>;
 let pollingInterval;
 let isPolling = true;
+
+// Pagination variables
+let employeesData = [];
+let attendedData = [];
+let filteredEmployeesData = [];
+let filteredAttendedData = [];
+let currentEmployeesPage = 1;
+let currentAttendedPage = 1;
+
+// Detect device type for pagination size
+function isMobile() {
+    return window.innerWidth <= 768;
+}
+
+function getRowsPerPage() {
+    return isMobile() ? 10 : 20;
+}
+
+// ====== Pagination System ======
+class TablePagination {
+    constructor(tableId, paginationId, infoId) {
+        this.table = document.getElementById(tableId);
+        this.paginationContainer = document.getElementById(paginationId);
+        this.infoContainer = document.getElementById(infoId);
+        this.currentPage = 1;
+        this.data = [];
+        this.filteredData = [];
+        this.rowsPerPage = getRowsPerPage();
+    }
+
+    setData(data) {
+        this.data = [...data];
+        this.filteredData = [...data];
+        this.currentPage = 1;
+        this.render();
+    }
+
+    filter(query) {
+        const q = query.toLowerCase();
+        if (!q) {
+            this.filteredData = [...this.data];
+        } else {
+            this.filteredData = this.data.filter(item => {
+                return Object.values(item).some(val =>
+                    val.toString().toLowerCase().includes(q)
+                );
+            });
+        }
+        this.currentPage = 1;
+        this.render();
+    }
+
+    render() {
+        this.rowsPerPage = getRowsPerPage();
+        const totalPages = Math.ceil(this.filteredData.length / this.rowsPerPage);
+        const startIndex = (this.currentPage - 1) * this.rowsPerPage;
+        const endIndex = startIndex + this.rowsPerPage;
+        const pageData = this.filteredData.slice(startIndex, endIndex);
+
+        this.renderTable(pageData);
+        this.renderPagination(totalPages);
+        this.renderInfo(startIndex, endIndex);
+    }
+
+    renderTable(pageData) {
+        const tbody = this.table.querySelector('tbody');
+        tbody.innerHTML = '';
+
+        pageData.forEach(item => {
+            const tr = document.createElement('tr');
+
+            // Set data attributes based on table type
+            if (this.table.id === 'employeesTable') {
+                tr.setAttribute('data-id', item.id);
+                tr.setAttribute('data-name', item.name);
+                tr.setAttribute('data-team', item.team);
+                tr.setAttribute('data-payment', item.payment);
+
+                tr.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>${escapeHtml(item.name)}</td>
+                    <td>${escapeHtml(item.team)}</td>
+                    <td>${escapeHtml(item.payment)}</td>
+                    <td>${escapeHtml(item.Timestamp)}</td>
+                `;
+            } else {
+                tr.setAttribute('data-id', item.id);
+                tr.setAttribute('data-name', item.name);
+
+                tr.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>${escapeHtml(item.name)}</td>
+                    <td>${escapeHtml(item.team)}</td>
+                    <td>${escapeHtml(item.payment_amount)}</td>
+                    <td>${item.attendance_time}</td>
+                `;
+            }
+
+            tbody.appendChild(tr);
+        });
+    }
+
+    renderPagination(totalPages) {
+        if (totalPages <= 1) {
+            this.paginationContainer.innerHTML = '';
+            return;
+        }
+
+        let paginationHTML = '';
+
+        // Previous button
+        paginationHTML +=
+            `<button class="page-btn" ${this.currentPage === 1 ? 'disabled' : ''} onclick="this.parentElement.pagination.goToPage(${this.currentPage - 1})">‹</button>`;
+
+        // Page numbers
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= this.currentPage - 2 && i <= this.currentPage + 2)) {
+                paginationHTML +=
+                    `<button class="page-btn ${i === this.currentPage ? 'active' : ''}" onclick="this.parentElement.pagination.goToPage(${i})">${i}</button>`;
+            } else if (i === this.currentPage - 3 || i === this.currentPage + 3) {
+                paginationHTML += `<span class="page-dots">...</span>`;
+            }
+        }
+
+        // Next button
+        paginationHTML +=
+            `<button class="page-btn" ${this.currentPage === totalPages ? 'disabled' : ''} onclick="this.parentElement.pagination.goToPage(${this.currentPage + 1})">›</button>`;
+
+        this.paginationContainer.innerHTML = paginationHTML;
+        this.paginationContainer.pagination = this;
+    }
+
+    renderInfo(startIndex, endIndex) {
+        const actualEnd = Math.min(endIndex, this.filteredData.length);
+        const total = this.filteredData.length;
+
+        if (total === 0) {
+            this.infoContainer.innerHTML = 'لا توجد نتائج';
+        } else {
+            this.infoContainer.innerHTML = `عرض ${startIndex + 1}-${actualEnd} من ${total}`;
+        }
+    }
+
+    goToPage(page) {
+        const totalPages = Math.ceil(this.filteredData.length / this.rowsPerPage);
+        if (page >= 1 && page <= totalPages) {
+            this.currentPage = page;
+            this.render();
+        }
+    }
+}
+
+// Initialize pagination instances
+const employeesPagination = new TablePagination('employeesTable', 'employeesPagination', 'employeesInfo');
+const attendedPagination = new TablePagination('attendedTable', 'attendedPagination', 'attendedInfo');
 
 // ====== Real-time Polling System ======
 async function checkForUpdates() {
@@ -145,7 +312,6 @@ async function checkForUpdates() {
             lastUpdateTimestamp = result.new_timestamp;
         }
 
-        // Update connection status
         updateConnectionStatus(true);
 
     } catch (error) {
@@ -160,73 +326,31 @@ async function refreshData() {
         const data = await response.json();
 
         if (data.success) {
-            updateEmployeesTable(data.employees);
-            updateAttendedTable(data.attended);
-            updateCounts(data.employees.length, data.attended.length);
+            employeesData = data.employees;
+            attendedData = data.attended;
+
+            employeesPagination.setData(employeesData);
+            attendedPagination.setData(attendedData);
+
+            updateCounts(employeesData.length, attendedData.length);
             updateLastUpdateTime();
 
-            // Show notification
+            // Reapply current search filters
+            const employeesQuery = searchEmployees.value;
+            const attendedQuery = searchAttended.value;
+
+            if (employeesQuery) {
+                employeesPagination.filter(employeesQuery);
+            }
+            if (attendedQuery) {
+                attendedPagination.filter(attendedQuery);
+            }
+
             showNotification('تم تحديث البيانات تلقائياً', 'success');
         }
     } catch (error) {
         console.error('Refresh error:', error);
         showNotification('خطأ في تحديث البيانات', 'error');
-    }
-}
-
-function updateEmployeesTable(employees) {
-    const tbody = employeesTable.querySelector('tbody');
-    tbody.innerHTML = '';
-
-    employees.forEach(emp => {
-        const tr = document.createElement('tr');
-        tr.setAttribute('data-id', emp.id);
-        tr.setAttribute('data-name', emp.name);
-        tr.setAttribute('data-team', emp.team);
-        tr.setAttribute('data-payment', emp.payment);
-
-        tr.innerHTML = `
-            <td>${emp.id}</td>
-            <td>${escapeHtml(emp.name)}</td>
-            <td>${escapeHtml(emp.team)}</td>
-            <td>${escapeHtml(emp.payment)}</td>
-            <td>${escapeHtml(emp.Timestamp)}</td>
-        `;
-
-        tbody.appendChild(tr);
-    });
-
-    // Reapply search filter if active
-    const searchValue = searchEmployees.value;
-    if (searchValue) {
-        filterTable(employeesTable, searchValue);
-    }
-}
-
-function updateAttendedTable(attended) {
-    const tbody = attendedTable.querySelector('tbody');
-    tbody.innerHTML = '';
-
-    attended.forEach(att => {
-        const tr = document.createElement('tr');
-        tr.setAttribute('data-id', att.id);
-        tr.setAttribute('data-name', att.name);
-
-        tr.innerHTML = `
-            <td>${att.id}</td>
-            <td>${escapeHtml(att.name)}</td>
-            <td>${escapeHtml(att.team)}</td>
-            <td>${escapeHtml(att.payment_amount)}</td>
-            <td>${att.attendance_time}</td>
-        `;
-
-        tbody.appendChild(tr);
-    });
-
-    // Reapply search filter if active
-    const searchValue = searchAttended.value;
-    if (searchValue) {
-        filterTable(attendedTable, searchValue);
     }
 }
 
@@ -252,15 +376,12 @@ function updateLastUpdateTime() {
 }
 
 function showNotification(message, type = 'info') {
-    // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.textContent = message;
 
-    // Add to page
     document.body.appendChild(notification);
 
-    // Auto remove after 3 seconds
     setTimeout(() => {
         if (notification.parentNode) {
             notification.parentNode.removeChild(notification);
@@ -280,7 +401,7 @@ function escapeHtml(unsafe) {
 // Start polling when page loads
 function startPolling() {
     if (pollingInterval) clearInterval(pollingInterval);
-    pollingInterval = setInterval(checkForUpdates, 2000); // Check every 2 seconds
+    pollingInterval = setInterval(checkForUpdates, 2000);
     isPolling = true;
 }
 
@@ -292,7 +413,6 @@ function stopPolling() {
     isPolling = false;
 }
 
-// Force refresh function
 async function forceRefresh() {
     await refreshData();
 }
@@ -300,11 +420,6 @@ async function forceRefresh() {
 // ====== Selection State ======
 function clearSelection(table) {
     table.querySelectorAll("tr.selected").forEach(tr => tr.classList.remove("selected"));
-}
-
-function selectRow(table, tr) {
-    clearSelection(table);
-    tr.classList.add("selected");
 }
 
 function updateButtons() {
@@ -358,21 +473,14 @@ attendedTable.addEventListener("click", (e) => {
     updateButtons();
 });
 
-// ====== Search Filter ======
-function filterTable(table, query) {
-    const q = query.toLowerCase();
-    table.querySelectorAll("tbody tr").forEach(tr => {
-        tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
-    });
-}
+// ====== Search Handlers ======
+searchEmployees.addEventListener("input", (e) => {
+    employeesPagination.filter(e.target.value);
+});
 
-function attachSearch(input, table) {
-    input.addEventListener("input", () => {
-        filterTable(table, input.value);
-    });
-}
-attachSearch(searchEmployees, employeesTable);
-attachSearch(searchAttended, attendedTable);
+searchAttended.addEventListener("input", (e) => {
+    attendedPagination.filter(e.target.value);
+});
 
 // ====== Helpers ======
 async function postForm(url, payload) {
@@ -406,7 +514,6 @@ async function moveToAttend() {
     showNotification(data.message, data.success ? 'success' : 'error');
 
     if (data.success) {
-        // Clear selection and refresh data instead of full reload
         selectedEmployee = null;
         clearSelection(employeesTable);
         updateButtons();
@@ -425,7 +532,6 @@ async function removeFromAttend() {
     showNotification(data.message, data.success ? 'success' : 'error');
 
     if (data.success) {
-        // Clear selection and refresh data instead of full reload
         selectedAttended = null;
         clearSelection(attendedTable);
         updateButtons();
@@ -434,19 +540,32 @@ async function removeFromAttend() {
     btnRemove.disabled = false;
 }
 
+// ====== Responsive handling ======
+window.addEventListener('resize', () => {
+    employeesPagination.render();
+    attendedPagination.render();
+});
+
 // ====== Page Visibility API ======
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
         stopPolling();
     } else {
         startPolling();
-        // Refresh data when page becomes visible again
         setTimeout(refreshData, 500);
     }
 });
 
-// Start polling when page loads
+// Initialize data when page loads
 window.addEventListener('load', () => {
+    // Convert PHP data to JavaScript arrays
+    employeesData = <?= json_encode($employees) ?>;
+    attendedData = <?= json_encode($attended) ?>;
+
+    // Initialize pagination
+    employeesPagination.setData(employeesData);
+    attendedPagination.setData(attendedData);
+
     startPolling();
     updateLastUpdateTime();
 });
@@ -527,6 +646,11 @@ header {
     width: 90%;
 }
 
+.table-container {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -542,6 +666,9 @@ td {
 
 th {
     background: #f1f1f1;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 tr:hover {
@@ -587,6 +714,59 @@ button:disabled {
     cursor: not-allowed;
 }
 
+/* Pagination Styles */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.pagination {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.page-btn {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #333;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    min-width: 40px;
+}
+
+.page-btn:hover:not(:disabled) {
+    background: #f0f0f0;
+}
+
+.page-btn.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-dots {
+    padding: 8px 4px;
+    color: #666;
+}
+
+.pagination-info {
+    font-size: 14px;
+    color: #666;
+    white-space: nowrap;
+}
+
 /* Notification Styles */
 .notification {
     position: fixed;
@@ -626,9 +806,10 @@ button:disabled {
 
 @media (max-width: 768px) {
     .status-indicator {
-        position: static;
-        text-align: center;
-        margin-top: 10px;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 12px;
     }
 
     .container {
@@ -638,6 +819,34 @@ button:disabled {
 
     .table-box {
         min-width: unset;
+    }
+
+    .pagination-container {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .pagination {
+        order: 2;
+    }
+
+    .pagination-info {
+        order: 1;
+        width: 100%;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .page-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+        min-width: 35px;
+    }
+
+    th,
+    td {
+        padding: 8px 5px;
+        font-size: 14px;
     }
 }
 </style>

@@ -194,12 +194,12 @@
             box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
         }
 
-         .btn-remove {
+            .btn-remove {
             background: linear-gradient(135deg, #9a3d33, #d32a1e);
             color: red;
-            display: none;
+            display: none;   /* 👈 this hides it */
             box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
-        }
+}
 
         .icon {
             margin-right: 8px;
@@ -491,6 +491,7 @@
                 
                 document.getElementById("employeeInfo").style.display = "block";
                 document.getElementById("attendBtn").style.display = "inline-flex";
+                document.getElementById("removeBtn").style.display = "inline-flex"; 
             }
         }
 

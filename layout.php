@@ -63,6 +63,11 @@ function isActivePage($page) {
                     <span class="icon">🚪</span>
                     <span class="text">تسجيل الخروج</span>
                 </a></li>
+
+            <li><a href="backup.php" class="nav-link <?php echo isActivePage('backup.php'); ?>">
+                    <span class="icon"></span>
+                    <span class="text">Plan B</span>
+                </a></li>
         </ul>
     </nav>
 

@@ -9,6 +9,7 @@ $menu_items = [
     'logout.php' => ['label' => 'تسجيل الخروج', 'icon' => '🚪'],
     'scan.php' => ['label' => 'مسح', 'icon' => '📷'],
 'attendance.php' => ['label' => 'حضور', 'icon' => '👥'],
+'backup.php' => ['label' => 'backup', 'icon' => ''],
 ];
 ?>
 <div class="side-nav">

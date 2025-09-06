@@ -40,16 +40,22 @@ try {
         sendResponse(false, "Invalid JSON data received", 'danger');
     }
     
-    $required_fields = ['id', 'name', 'payment_amount', 'team'];
+    // Updated validation - handle payment_amount = 0 case
+    $required_fields = ['id', 'name', 'team'];
     foreach ($required_fields as $field) {
         if (!isset($input[$field]) || empty(trim($input[$field]))) {
             sendResponse(false, "Missing required field: $field", 'danger');
         }
     }
     
+    // Special validation for payment_amount (can be 0)
+    if (!isset($input['payment_amount']) || !is_numeric($input['payment_amount'])) {
+        sendResponse(false, "Missing or invalid payment_amount field", 'danger');
+    }
+    
     $id = trim($input['id']);
     $name = trim($input['name']);
-    $payment_amount = trim($input['payment_amount']);
+    $payment_amount = floatval($input['payment_amount']); // Convert to float to handle numeric values
     $team = trim($input['team']);
     
     // Step 1: Check if employee exists

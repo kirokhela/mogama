@@ -12,12 +12,20 @@ $name   = $_POST['name']           ?? null;
 $team   = $_POST['team']           ?? null;
 $amount = $_POST['payment_amount'] ?? null;
 
-// Validate all required fields are present
-if (!$id || !$name || !$team || !$amount) {
-    // It's better to give a more specific error message
+// Validate required fields (excluding payment_amount from empty check)
+if (!$id || !$name || !$team) {
     echo json_encode(["success" => false, "message" => "Missing required employee data."]);
     exit;
 }
+
+// Special validation for payment_amount (can be 0)
+if (!isset($_POST['payment_amount']) || !is_numeric($_POST['payment_amount'])) {
+    echo json_encode(["success" => false, "message" => "Missing or invalid payment amount."]);
+    exit;
+}
+
+// Convert to proper numeric value
+$amount = floatval($_POST['payment_amount']);
 
 // Check if the employee has already attended
 $check = $conn->prepare("SELECT id FROM Attended_employee WHERE id = ?");

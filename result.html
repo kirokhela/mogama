@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Result</title>
+    <title>Employee Information</title>
     <style>
         * {
             box-sizing: border-box;
@@ -63,34 +63,6 @@
             display: inline-block;
         }
 
-        .accuracy {
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 0.8em;
-            font-weight: 600;
-            margin-left: 10px;
-        }
-
-        .accuracy-high { background: #d4edda; color: #155724; }
-        .accuracy-medium { background: #fff3cd; color: #856404; }
-        .accuracy-low { background: #f8d7da; color: #721c24; }
-
-        .qr-data {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            padding: 25px;
-            margin: 25px 0;
-            word-wrap: break-word;
-            font-size: 1.1em;
-            line-height: 1.6;
-            color: #495057;
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
         .employee-info {
             background: linear-gradient(135deg, #e8f5e8 0%, #f0fff0 100%);
             border: 2px solid #28a745;
@@ -98,7 +70,6 @@
             padding: 25px;
             margin: 25px 0;
             text-align: left;
-            display: none;
         }
 
         .employee-info h3 {
@@ -169,37 +140,23 @@
             transform: none !important;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-        }
-
         .btn-secondary {
             background: linear-gradient(135deg, #6c757d, #545b62);
             color: white;
             box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
         }
 
-        .btn-success {
-            background: linear-gradient(135deg, #28a745, #1e7e34);
-            color: white;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-        }
-
         .btn-attend {
             background: linear-gradient(135deg, #17a2b8, #138496);
             color: white;
-            display: none;
             box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
         }
 
-            .btn-remove {
-            background: linear-gradient(135deg, #9a3d33, #d32a1e);
+        .btn-remove {
+            background: linear-gradient(135deg, #dc3545, #b21f2d);
             color: white;
-            display: none;   /* 👈 this hides it */
-            box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
-}
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
 
         .icon {
             margin-right: 8px;
@@ -226,10 +183,12 @@
             color: #721c24;
         }
 
-        .alert-warning {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
         }
 
         @media (max-width: 768px) {
@@ -259,216 +218,63 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎯 QR Code Analysis</h1>
+        <h1>👤 Employee Information</h1>
         
-        <div class="data-type" id="dataType">
-            QR Code Content:
-            <span class="accuracy" id="accuracyIndicator"></span>
+        <div class="data-type">
+            Database Record
         </div>
         
-        <div class="qr-data" id="qrData">Loading...</div>
-        
         <div class="employee-info" id="employeeInfo">
-            <h3>👤 Employee Information</h3>
+            <h3>Employee Details</h3>
             <div class="info-grid" id="infoGrid"></div>
+        </div>
+
+        <div class="error-message" id="errorMessage" style="display: none;">
+            <h3>❌ Error</h3>
+            <p id="errorText"></p>
         </div>
 
         <div class="alert" id="alertBox"></div>
         
         <div class="actions">
-            <button class="btn btn-primary" onclick="copyToClipboard()">
-                <span class="icon">📋</span>Copy to Clipboard
-            </button>
             <button class="btn btn-secondary" onclick="goBack()">
                 <span class="icon">📷</span>Scan Another
             </button>
             
-                <button class="btn btn-attend" onclick="markAttendance()" id="attendBtn">
+            <button class="btn btn-attend" onclick="markAttendance()" id="attendBtn">
                 <span class="icon">✅</span>Mark Attendance
             </button>
 
             <button class="btn btn-remove" onclick="removeFromAttend()" id="removeBtn">
                 <span class="icon">❌</span>Remove Attendance
             </button>
-
-
-     
         </div>
     </div>
 
     <script>
-        let qrData = "";
         let employeeData = null;
 
-
-      function removeFromAttend() {
-    if (!employeeData) {
-        showAlert("لا يوجد بيانات موظف لحذف الحضور!", "danger");
-        return;
-    }
-
-    const removeBtn = document.getElementById("removeBtn");
-    removeBtn.disabled = true;
-    removeBtn.innerHTML = "<span class='icon'>⏳</span>Processing...";
-
-    fetch("remove_attendance.php", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        },
-        body: JSON.stringify({ id: employeeData.id })
-    })
-    .then(response => {
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            showAlert(data.message || "تمت إزالة الحضور بنجاح!", "success");
-            removeBtn.innerHTML = "<span class='icon'>❌</span>Removed";
-            removeBtn.style.background = "linear-gradient(135deg, #dc3545, #b21f2d)";
-        } else {
-            showAlert(data.message || "فشل في إزالة الحضور", "danger");
-            removeBtn.disabled = false;
-            removeBtn.innerHTML = "<span class='icon'>❌</span>Remove Attendance";
-        }
-    })
-    .catch(error => {
-        showAlert(`Network error: ${error.message}`, "danger");
-        removeBtn.disabled = false;
-        removeBtn.innerHTML = "<span class='icon'>❌</span>Remove Attendance";
-    });
-}
-
-
-
-        function getQRData() {
+        function getEmployeeData() {
             const urlParams = new URLSearchParams(window.location.search);
-            qrData = urlParams.get("data") || "No data found";
             
-            const qrDataElement = document.getElementById("qrData");
-            const dataTypeElement = document.getElementById("dataType");
-            const openLinkBtn = document.getElementById("openLinkBtn");
+            // Check if we have employee data in URL parameters
+            const id = urlParams.get("id");
+            const name = urlParams.get("name");
+            const payment = urlParams.get("payment");
+            const team = urlParams.get("team");
             
-            qrDataElement.textContent = qrData;
-            
-            const analysisResult = analyzeQRData(qrData);
-            
-            dataTypeElement.innerHTML = `${analysisResult.type}: <span class="accuracy ${analysisResult.accuracyClass}">${analysisResult.accuracy}</span>`;
-            
-            if (analysisResult.isEmployee) {
-                parseEmployeeData(qrData);
+            if (id && name) {
+                employeeData = {
+                    id: id,
+                    name: name,
+                    payment: payment || "Not specified",
+                    team: team || "Not specified"
+                };
+                
                 showEmployeeInfo();
-            } else if (analysisResult.isURL) {
-                openLinkBtn.style.display = "inline-flex";
+            } else {
+                showError("No employee data found in URL parameters");
             }
-        }
-
-        function analyzeQRData(data) {
-            const cleanData = data.trim();
-            
-            // Employee data detection
-            const employeePatterns = [
-                /ID:\s*([^,]+),?\s*Name:\s*([^,]+),?\s*Payment\s*Amount:\s*([^,]+),?\s*Team:\s*([^,\n]*)/i,
-                /Employee\s*ID:\s*([^,]+),?\s*Name:\s*([^,]+),?\s*Amount:\s*([^,]+),?\s*Department:\s*([^,\n]*)/i
-            ];
-
-            for (let pattern of employeePatterns) {
-                if (pattern.test(cleanData)) {
-                    return {
-                        type: "Employee QR Code",
-                        accuracy: "High",
-                        accuracyClass: "accuracy-high",
-                        isEmployee: true,
-                        isURL: false
-                    };
-                }
-            }
-
-            // URL detection
-            if (isValidURL(cleanData)) {
-                return {
-                    type: "Website URL",
-                    accuracy: "High",
-                    accuracyClass: "accuracy-high",
-                    isEmployee: false,
-                    isURL: true
-                };
-            }
-
-            // Check for potential employee data
-            if (cleanData.toLowerCase().includes("id") || cleanData.toLowerCase().includes("name") || 
-                cleanData.toLowerCase().includes("employee") || cleanData.toLowerCase().includes("payment")) {
-                return {
-                    type: "Possible Employee Data",
-                    accuracy: "Low",
-                    accuracyClass: "accuracy-low",
-                    isEmployee: true,
-                    isURL: false
-                };
-            }
-
-            // Default to plain text
-            return {
-                type: "Plain Text Content",
-                accuracy: "Medium",
-                accuracyClass: "accuracy-medium",
-                isEmployee: false,
-                isURL: false
-            };
-        }
-
-        function isValidURL(str) {
-            try {
-                const url = new URL(str);
-                return ['http:', 'https:', 'ftp:'].includes(url.protocol);
-            } catch {
-                return false;
-            }
-        }
-
-        function parseEmployeeData(data) {
-            try {
-                const patterns = [
-                    /ID:\s*([^,]+),?\s*Name:\s*([^,]+),?\s*Payment\s*Amount:\s*([^,]+),?\s*Team:\s*([^,\n]*)/i,
-                    /Employee\s*ID:\s*([^,]+),?\s*Name:\s*([^,]+),?\s*Amount:\s*([^,]+),?\s*Department:\s*([^,\n]*)/i
-                ];
-
-                for (let pattern of patterns) {
-                    const match = data.match(pattern);
-                    if (match) {
-                        employeeData = {
-                            id: match[1] ? match[1].trim() : "-",
-                            name: match[2] ? match[2].trim() : "-",
-                            payment: match[3] ? match[3].trim() : "-",
-                            team: match[4] ? match[4].trim() : "-"
-                        };
-                        return employeeData;
-                    }
-                }
-
-                // Fallback parsing
-                const idMatch = data.match(/(?:ID|Employee\s*ID):\s*([^\n,]+)/i);
-                const nameMatch = data.match(/Name:\s*([^\n,]+)/i);
-                const paymentMatch = data.match(/(?:Payment|Amount):\s*([^\n,]+)/i);
-                const teamMatch = data.match(/(?:Team|Department):\s*([^\n,]+)/i);
-                
-                if (idMatch || nameMatch || paymentMatch || teamMatch) {
-                    employeeData = {
-                        id: idMatch ? idMatch[1].trim() : "-",
-                        name: nameMatch ? nameMatch[1].trim() : "-",
-                        payment: paymentMatch ? paymentMatch[1].trim() : "-",
-                        team: teamMatch ? teamMatch[1].trim() : "-"
-                    };
-                    return employeeData;
-                }
-                
-            } catch (error) {
-                console.error("Error parsing employee data:", error);
-            }
-            
-            return null;
         }
 
         function showEmployeeInfo() {
@@ -490,27 +296,19 @@
                 `).join("");
                 
                 document.getElementById("employeeInfo").style.display = "block";
-                document.getElementById("attendBtn").style.display = "inline-flex";
-                document.getElementById("removeBtn").style.display = "inline-flex"; 
             }
         }
 
-        function copyToClipboard() {
-            navigator.clipboard.writeText(qrData).then(() => {
-                showAlert("QR data copied to clipboard!", "success");
-            }).catch(() => {
-                showAlert("Failed to copy to clipboard", "danger");
-            });
+        function showError(message) {
+            document.getElementById("errorText").textContent = message;
+            document.getElementById("errorMessage").style.display = "block";
+            document.getElementById("employeeInfo").style.display = "none";
+            document.getElementById("attendBtn").style.display = "none";
+            document.getElementById("removeBtn").style.display = "none";
         }
 
         function goBack() {
-            window.history.back() || (window.location.href = "scan.php");
-        }
-
-        function openLink() {
-            if (isValidURL(qrData)) {
-                window.open(qrData, '_blank');
-            }
+            window.history.back() || (window.location.href = "scan.html");
         }
 
         function markAttendance() {
@@ -562,6 +360,46 @@
             });
         }
 
+        function removeFromAttend() {
+            if (!employeeData) {
+                showAlert("No employee data found for removing attendance!", "danger");
+                return;
+            }
+
+            const removeBtn = document.getElementById("removeBtn");
+            removeBtn.disabled = true;
+            removeBtn.innerHTML = "<span class='icon'>⏳</span>Processing...";
+
+            fetch("remove_attendance.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({ id: employeeData.id })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showAlert(data.message || "Attendance removed successfully!", "success");
+                    removeBtn.innerHTML = "<span class='icon'>❌</span>Removed";
+                    removeBtn.style.background = "linear-gradient(135deg, #6c757d, #545b62)";
+                } else {
+                    showAlert(data.message || "Failed to remove attendance", "danger");
+                    removeBtn.disabled = false;
+                    removeBtn.innerHTML = "<span class='icon'>❌</span>Remove Attendance";
+                }
+            })
+            .catch(error => {
+                showAlert(`Network error: ${error.message}`, "danger");
+                removeBtn.disabled = false;
+                removeBtn.innerHTML = "<span class='icon'>❌</span>Remove Attendance";
+            });
+        }
+
         function showAlert(message, type) {
             const alertBox = document.getElementById("alertBox");
             alertBox.className = `alert alert-${type}`;
@@ -574,16 +412,11 @@
         }
 
         // Initialize when page loads
-        window.addEventListener("load", getQRData);
+        window.addEventListener("load", getEmployeeData);
         
         // Keyboard shortcuts
         document.addEventListener("keydown", function(event) {
-            if (event.ctrlKey || event.metaKey) {
-                if (event.key === 'c') {
-                    event.preventDefault();
-                    copyToClipboard();
-                }
-            } else if (event.key === 'Escape') {
+            if (event.key === 'Escape') {
                 goBack();
             }
         });

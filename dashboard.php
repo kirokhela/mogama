@@ -285,11 +285,19 @@ body {
     <div class="cards">';
 
 foreach ($teams as $team) {
-    $count = $conn->query("SELECT COUNT(*) as c FROM employees WHERE team='$team'")->fetch_assoc()['c'];
+    // Count members in the team
+    $count = $conn->query("SELECT COUNT(*) as c FROM employees WHERE team='$team'")
+                  ->fetch_assoc()['c'];
+    
+    // Sum payments for the team
+    $sum_pay = $conn->query("SELECT SUM(payment) as total FROM employees WHERE team='$team'")
+                    ->fetch_assoc()['total'];
+
     $pageContent .= '
         <div class="card" style="border-top:5px solid #' . substr(md5($team), 0, 6) . '">
             <h3>' . htmlspecialchars($team) . '</h3>
             <p>عدد: ' . $count . '</p>
+            <p><span class="blurred">إجمالي: ' . number_format($sum_pay, 2) . ' جنيه</span></p>
             <a href="team_members.php?team=' . urlencode($team) . '" class="export-btn">عرض الأعضاء</a>
             <a href="dashboard.php?team_export=' . urlencode($team) . '" class="export-btn">تحميل CSV</a>
         </div>';

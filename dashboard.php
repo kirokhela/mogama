@@ -283,11 +283,11 @@ body {
             <p><span class="blurred">' . number_format($total_payment_all, 2) . ' جنيه</span></p>
         </div>
         <div class="card total-card">
-            <h3>إجمالي أهالي</h3>
+            <h3>إجمالي مدفوعات أهالي</h3>
             <p><span class="blurred">' . number_format($total_payment_ahaly, 2) . ' جنيه</span></p>
         </div>
         <div class="card total-card">
-            <h3>إجمالي الكشافة</h3>
+            <h3>إجمالي مدفوعات الكشافة</h3>
             <p><span class="blurred">' . number_format($total_payment_non_ahaly, 2) . ' جنيه</span></p>
         </div>
     </div>

@@ -16,6 +16,14 @@ while ($row = $teams_result->fetch_assoc()) {
 $total_scouts_all = $conn->query("SELECT COUNT(*) as c FROM employees")->fetch_assoc()['c'];
 $total_payment_all = $conn->query("SELECT SUM(payment) as sum_pay FROM employees")->fetch_assoc()['sum_pay'];
 
+// --- إجمالي المدفوعات لفريق أهالي ---
+$total_payment_ahaly = $conn->query("SELECT SUM(payment) as total FROM employees WHERE team='أهالي'")
+                            ->fetch_assoc()['total'];
+
+// --- إجمالي المدفوعات لغير أهالي ---
+$total_payment_non_ahaly = $conn->query("SELECT SUM(payment) as total FROM employees WHERE team!='أهالي'")
+                                ->fetch_assoc()['total'];
+
 // --- إحصائيات اليوم ---
 $today_stats = $conn->query("
     SELECT COUNT(*) as members_count, SUM(payment) as total_payment
@@ -62,7 +70,7 @@ if (isset($_GET['team_export'])) {
     fclose($output);
     exit();
 }
- 
+
 // --- تصدير CSV لكل الأعضاء ---
 if (isset($_GET['all_export'])) {
     header('Content-Type:text/csv; charset=UTF-8');
@@ -82,7 +90,6 @@ if (isset($_GET['all_export'])) {
     fclose($output);
     exit();
 }
- 
 
 // --- تصدير CSV حسب اليوم ---
 if (isset($_GET['day_export'])) {
@@ -270,13 +277,18 @@ body {
         <div class="card total-card">
             <h3>إجمالي الكشافة</h3>
             <p>' . $total_scouts_all . '</p>
-          <!-- download option -->
-            <!-- <a href="dashboard.php?all_export=1" class="export-btn">تحميل الكل</a> -->
-            </div>
+        </div>
         <div class="card total-card">
             <h3>إجمالي المدفوعات</h3>
-         <p><span class="blurred">' . number_format($total_payment_all, 2) . ' جنيه</span></p>
-
+            <p><span class="blurred">' . number_format($total_payment_all, 2) . ' جنيه</span></p>
+        </div>
+        <div class="card total-card">
+            <h3>إجمالي مدفوعات أهالي</h3>
+            <p><span class="blurred">' . number_format($total_payment_ahaly, 2) . ' جنيه</span></p>
+        </div>
+        <div class="card total-card">
+            <h3>إجمالي مدفوعات الكشافة</h3>
+            <p><span class="blurred">' . number_format($total_payment_non_ahaly, 2) . ' جنيه</span></p>
         </div>
     </div>
 
@@ -285,11 +297,16 @@ body {
     <div class="cards">';
 
 foreach ($teams as $team) {
-    $count = $conn->query("SELECT COUNT(*) as c FROM employees WHERE team='$team'")->fetch_assoc()['c'];
+    $count = $conn->query("SELECT COUNT(*) as c FROM employees WHERE team='$team'")
+                  ->fetch_assoc()['c'];
+    $sum_pay = $conn->query("SELECT SUM(payment) as total FROM employees WHERE team='$team'")
+                    ->fetch_assoc()['total'];
+
     $pageContent .= '
         <div class="card" style="border-top:5px solid #' . substr(md5($team), 0, 6) . '">
             <h3>' . htmlspecialchars($team) . '</h3>
             <p>عدد: ' . $count . '</p>
+            <p><span class="blurred">إجمالي: ' . number_format($sum_pay, 2) . ' جنيه</span></p>
             <a href="team_members.php?team=' . urlencode($team) . '" class="export-btn">عرض الأعضاء</a>
             <a href="dashboard.php?team_export=' . urlencode($team) . '" class="export-btn">تحميل CSV</a>
         </div>';
@@ -305,7 +322,7 @@ foreach ($days_stats as $day) {
         <div class="card day-card">
             <h3>' . htmlspecialchars($day['day']) . '</h3>
             <p>الأعضاء: ' . $day['members_count'] . '</p>
-            <p><span class="blurred">المدفوعات: ' . number_format($day['total_payment'], 2) . ' جنيه</p>
+            <p><span class="blurred">المدفوعات: ' . number_format($day['total_payment'], 2) . ' جنيه</span></p>
             <a href="dashboard.php?day_export=' . urlencode($day['day']) . '" class="export-btn">تحميل CSV</a>
         </div>';
 }
@@ -325,7 +342,7 @@ $pageContent .= '
 foreach ($payment_dist as $amount => $count) {
     $pageContent .= '
             <tr>
-                <td>' . number_format($amount, 2) . ' جنيه</td>
+                <td><span class="blurred">' . number_format($amount, 2) . ' جنيه</span></td>
                 <td>' . $count . '</td>
             </tr>';
 }

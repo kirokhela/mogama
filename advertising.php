@@ -76,7 +76,7 @@
         </span>
         <div class="flex-1">
           <div class="text-lg font-bold">Spotify</div>
-          <div class="text-sm opacity-90">اسمع الإنشاد على سبوتيفاي</div>
+          <div class="text-sm opacity-90">اسمعنا على سبوتيفاي</div>
         </div>
         <button type="button" data-qr="https://open.spotify.com/artist/6UxngCQeJnijih2mXIhb7Z?si=CUircyf5R2eM1w9a-Sb8sQ" class="open-qr text-white/90 text-xl px-2">⋯</button>
       </a>
@@ -95,7 +95,7 @@
     </section>
 
     <footer class="mt-10 text-center text-sm text-white/70">
-      صُنع بحب بواسطة فريق <span class="font-bold">كشافة الشمندورة</span> — © <?php echo date('Y'); ?>
+      صُنع بواسطة فريق <span class="font-bold">كشافة الشمندورة</span> — © <?php echo date('Y'); ?>
     </footer>
   </main>
 

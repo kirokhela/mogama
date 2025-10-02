@@ -65,10 +65,10 @@ function isActivePage($page) {
                 </a></li>
 
 
-            <!-- <li><a href="fawry.php" class="nav-link <?php echo isActivePage('fawry.php'); ?>">
+            <li><a href="fawry.php" class="nav-link <?php echo isActivePage('fawry.php'); ?>">
                     <span class="icon">💳</span>
                     <span class="text">التسجيل الفوري</span>
-                </a></li> -->
+                </a></li>
             <li><a href="backup.php" class="nav-link <?php echo isActivePage('backup.php'); ?>">
                     <span class="icon">🔙</span>
                     <span class="text">Plan B</span>
